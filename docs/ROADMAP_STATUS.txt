@@ -79,14 +79,14 @@ Current sprint (this turn)
 [x] Git-agent: commit + push security/qa validation milestone to origin/main
 [x] Conductor: document Definition of Done for all phases
 [x] Conductor: confirm and document branching policy
-[ ] Git-agent: commit + push governance docs milestone to origin/main
+[x] Git-agent: commit + push governance docs milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 05fc929
+- 208868e
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
