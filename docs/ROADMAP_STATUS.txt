@@ -76,14 +76,14 @@ Current sprint (this turn)
 [x] Git-agent: commit + push admin milestone to origin/main
 [x] Backend-agent: add SQL сценарии для валидации RLS-политик
 [x] QA-agent: add regression widget tests for role access and training flow
-[ ] Git-agent: commit + push security/qa validation milestone to origin/main
+[x] Git-agent: commit + push security/qa validation milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- e847075
+- 05fc929
 
 Current blockers:
 - Definition of Done per phase is not documented yet.
