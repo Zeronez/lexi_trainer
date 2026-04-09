@@ -41,7 +41,7 @@ Phase 3 - Frontend (Flutter app)
 [x] Frontend-agent: auth flow UI (sign in/sign up)
 [x] Frontend-agent: vocabulary learning screens + task execution flow
 [x] Frontend-agent: achievements/progress UI components
-[ ] Frontend-agent: admin section screens (content/groups/tasks management)
+[x] Frontend-agent: admin section screens (content/groups/tasks management)
 
 Phase 4 - QA / Testing
 [ ] QA-agent: create initial unit tests for domain/use-cases
@@ -51,7 +51,7 @@ Phase 4 - QA / Testing
 
 Phase 5 - Integration & Security
 [x] Backend-agent: connect Flutter client to Supabase Auth + DB
-[ ] Frontend-agent: enforce role-based navigation
+[x] Frontend-agent: enforce role-based navigation
 [ ] Backend-agent: validate RLS with test scenarios
 [ ] QA-agent: add regression tests for permissions and task flow
 
@@ -71,6 +71,9 @@ Current sprint (this turn)
 [x] Git-agent: commit + push achievements milestone to origin/main
 [x] QA-agent: split widget tests from live Supabase connectivity test
 [x] Git-agent: commit + push test stability hotfix to origin/main
+[x] Frontend-agent: implement admin section screens (content/groups/tasks)
+[x] Frontend-agent: add role-based access to admin section (admin/teacher only)
+[ ] Git-agent: commit + push admin milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -80,5 +83,5 @@ Last commit hash:
 - ff4d264
 
 Current blockers:
-- Admin section is not implemented yet.
+- Backend RLS validation scenarios and permissions regression tests are not implemented yet.
 - Supabase keys were exposed outside secret storage and must be rotated immediately.

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
 import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
+import 'package:lexi_trainer/features/admin/presentation/admin_dashboard_screen.dart';
 import 'package:lexi_trainer/features/vocabulary/presentation/vocabulary_training_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final userRole = ref.watch(currentUserRoleProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -59,6 +63,30 @@ class HomeScreen extends StatelessWidget {
                   },
                   child: const Text('Мои достижения'),
                 ),
+              ),
+              const SizedBox(height: 12),
+              userRole.when(
+                data: (role) {
+                  if (!role.canOpenAdminSection) {
+                    return const SizedBox.shrink();
+                  }
+                  return SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const AdminDashboardScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.admin_panel_settings_outlined),
+                      label: const Text('Админ-раздел'),
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
             ],
           ),
