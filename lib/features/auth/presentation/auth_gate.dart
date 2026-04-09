@@ -12,12 +12,14 @@ class AuthGate extends StatefulWidget {
     this.authStateChanges,
     this.authenticatedChild,
     this.unauthenticatedChild,
+    this.useSupabaseClient = true,
   });
 
   final Session? initialSession;
   final Stream<AuthState>? authStateChanges;
   final Widget? authenticatedChild;
   final Widget? unauthenticatedChild;
+  final bool useSupabaseClient;
 
   @override
   State<AuthGate> createState() => _AuthGateState();
@@ -31,12 +33,23 @@ class _AuthGateState extends State<AuthGate> {
   void initState() {
     super.initState();
 
-    final auth =
-        (widget.initialSession == null || widget.authStateChanges == null)
-        ? Supabase.instance.client.auth
-        : null;
-    _session = widget.initialSession ?? auth?.currentSession;
-    final authStateStream = widget.authStateChanges ?? auth!.onAuthStateChange;
+    if (widget.useSupabaseClient) {
+      final auth = Supabase.instance.client.auth;
+      _session = widget.initialSession ?? auth.currentSession;
+      final authStateStream = widget.authStateChanges ?? auth.onAuthStateChange;
+      _authSubscription = authStateStream.listen((state) {
+        if (!mounted) {
+          return;
+        }
+
+        setState(() => _session = state.session);
+      });
+      return;
+    }
+
+    _session = widget.initialSession;
+    final authStateStream =
+        widget.authStateChanges ?? const Stream<AuthState>.empty();
     _authSubscription = authStateStream.listen((state) {
       if (!mounted) {
         return;

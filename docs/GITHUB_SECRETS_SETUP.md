@@ -24,3 +24,6 @@ Security notes:
 Recommended next step:
 
 - Add Flutter runtime configuration via `--dart-define` using values sourced from GitHub Secrets in CI (without hardcoding).
+- The CI test job already uses:
+  - `--dart-define=SUPABASE_URL=...`
+  - `--dart-define=SUPABASE_PUBLISHABLE_KEY=...`

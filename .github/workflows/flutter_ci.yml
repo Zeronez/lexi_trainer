@@ -44,6 +44,15 @@ jobs:
         run: flutter analyze
         if: ${{ hashFiles('pubspec.yaml') != '' }}
 
+      - name: Validate Supabase test secrets
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+        run: |
+          test -n "${{ secrets.SUPABASE_URL }}" || (echo "Missing secret: SUPABASE_URL" && exit 1)
+          test -n "${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" || (echo "Missing secret: SUPABASE_PUBLISHABLE_KEY" && exit 1)
+
       - name: Test
-        run: flutter test
+        run: >
+          flutter test
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         if: ${{ hashFiles('pubspec.yaml') != '' }}

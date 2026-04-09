@@ -38,6 +38,7 @@ The workflow in `.github/workflows/flutter_ci.yml` runs on `push` and `pull_requ
 ## How CI Works
 
 The pipeline is designed to catch formatting issues, static analysis warnings, and test failures before changes are merged. This keeps the main branch stable and gives fast feedback during development.
+Widget tests initialize Supabase with real project credentials from GitHub Actions secrets.
 
 ## Running With Supabase
 
