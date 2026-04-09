@@ -44,10 +44,10 @@ Phase 3 - Frontend (Flutter app)
 [x] Frontend-agent: admin section screens (content/groups/tasks management)
 
 Phase 4 - QA / Testing
-[ ] QA-agent: create initial unit tests for domain/use-cases
+[x] QA-agent: create initial unit tests for domain/use-cases
 [x] QA-agent: create widget tests for critical screens
 [x] QA-agent: ensure tests run only in GitHub Actions pipeline
-[ ] QA-agent: add test data factories/mocks
+[x] QA-agent: add test data factories/mocks
 
 Phase 5 - Integration & Security
 [x] Backend-agent: connect Flutter client to Supabase Auth + DB
@@ -81,6 +81,9 @@ Current sprint (this turn)
 [x] Conductor: confirm and document branching policy
 [x] Git-agent: commit + push governance docs milestone to origin/main
 [x] Git-agent: commit + push analyzer hotfix for role import and live-test lint
+[x] QA-agent: add initial domain/use-case unit tests (vocabulary)
+[x] QA-agent: add reusable test data factories and mocks
+[ ] Git-agent: commit + push Phase 4 completion milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
