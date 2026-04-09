@@ -73,14 +73,14 @@ Current sprint (this turn)
 [x] Git-agent: commit + push test stability hotfix to origin/main
 [x] Frontend-agent: implement admin section screens (content/groups/tasks)
 [x] Frontend-agent: add role-based access to admin section (admin/teacher only)
-[ ] Git-agent: commit + push admin milestone to origin/main
+[x] Git-agent: commit + push admin milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- ff4d264
+- e847075
 
 Current blockers:
 - Backend RLS validation scenarios and permissions regression tests are not implemented yet.
