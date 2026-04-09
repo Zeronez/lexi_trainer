@@ -64,14 +64,14 @@ Current sprint (this turn)
 [x] Frontend-agent: localize UI to Russian audience
 [x] DevOps-agent: align code formatting with CI (`dart format`)
 [x] Frontend-agent: add vocabulary training screen with basic task execution flow
-[ ] Git-agent: commit + push localization + vocabulary flow milestone to origin/main
+[x] Git-agent: commit + push localization + vocabulary flow milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- a34526a
+- 75985c9
 
 Current blockers:
 - Achievements UI and admin section are not implemented yet.
