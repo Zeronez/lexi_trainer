@@ -1,0 +1,98 @@
+﻿Lexi Trainer - Production Roadmap (Full Product, No Stubs)
+Last updated: 2026-04-10
+
+Legend:
+[ ] not started
+[-] in progress
+[x] done
+
+Non-negotiable goal:
+[ ] All critical user/admin flows run on real Supabase data with production-grade validation, security, and CI quality gates.
+
+Delivery principles:
+[x] Git push after each logical milestone (CI trigger required)
+[x] No hardcoded business data in production screens
+[x] Russian-first UX copy
+[x] Sub-agent ownership split per milestone
+
+Current completion snapshot:
+[x] Foundation (schema, RLS baseline, auth, app skeleton, CI)
+[x] Student baseline flows (auth, training UI, achievements UI)
+[x] Admin baseline screens and role gate
+[x] Phase 4 baseline QA
+[-] Productization (replace stubs with real data + operations readiness)
+
+Milestone 1 - Admin Real Data (Sprint A)
+Owner split:
+[x] Frontend-agent: wire admin tabs to live Supabase lists (content/groups/tasks)
+[x] Frontend-agent: create forms with validation for content/groups/tasks
+[ ] Backend-agent: verify/patch API compatibility for admin CRUD edge cases
+[x] QA-agent: admin rendering/CRUD widget regressions
+[ ] Git-agent: push Sprint A milestone
+Acceptance:
+[x] No static list items in admin tabs
+[x] Create actions persist rows in DB and refresh UI
+[x] Empty/error/loading states present in all tabs
+
+Milestone 2 - Student Real Learning Flow (Sprint B)
+Owner split:
+[ ] Frontend-agent: replace local training words with DB tasks/words
+[ ] Frontend-agent: add assignment list (active/completed/overdue)
+[ ] Frontend-agent: persist executions/attempts/question_answers
+[ ] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
+[ ] QA-agent: lifecycle regression tests
+[ ] Git-agent: push Sprint B milestone
+Acceptance:
+[ ] Student session fully data-driven
+[ ] Attempts and answers persisted to DB
+[ ] Deadlines and attempt limits enforced in UI and backend
+
+Milestone 3 - Achievements & Notifications Live (Sprint C)
+Owner split:
+[ ] Backend-agent: achievements awarding logic (SQL/RPC)
+[ ] Backend-agent: notifications creation/delivery workflow
+[ ] Frontend-agent: achievements screen from DB only
+[ ] Frontend-agent: notifications inbox screen from DB
+[ ] QA-agent: regression tests for awarding and notifications
+[ ] Git-agent: push Sprint C milestone
+Acceptance:
+[ ] Achievements list and progress from DB
+[ ] New notifications visible in app inbox
+[ ] No hardcoded achievement/notification records in UI
+
+Milestone 4 - Security & Data Integrity (Sprint D)
+Owner split:
+[ ] Backend-agent: exhaustive RLS matrix validation and fixes
+[ ] Backend-agent: constraints/index hardening and migration cleanup
+[ ] QA-agent: permission matrix test suite (admin/teacher/student)
+[ ] DevOps-agent: CI stage for extended security/regression suite
+[ ] Git-agent: push Sprint D milestone
+Acceptance:
+[ ] Unauthorized access attempts denied across all critical tables
+[ ] Permission matrix documented and covered by tests
+[ ] Extended CI suite green on main
+
+Milestone 5 - Release Readiness (Sprint E)
+Owner split:
+[ ] DevOps-agent: release workflow(s) and artifact retention
+[ ] DevOps-agent: runbook for rollback/recovery
+[ ] QA-agent: UAT checklist and pre-release gate
+[ ] Conductor: freeze criteria and release sign-off doc
+[ ] Git-agent: push Sprint E milestone
+Acceptance:
+[ ] Reproducible release process documented
+[ ] UAT checklist completed with no open P0/P1 issues
+[ ] Final production candidate approved
+
+Cross-cutting blockers (must be resolved ASAP):
+[ ] Rotate previously exposed Supabase keys (publishable/secret/service_role/JWT material)
+[ ] Confirm GitHub Actions secrets/variables updated with rotated values
+
+Current active sprint:
+[-] Sprint A - Admin Real Data
+[ ] Next: Sprint B - Student Real Learning Flow
+
+Handoff protocol:
+[ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]
+[ ] Include latest commit hash after each push
+[ ] Include top 1-3 blockers only
