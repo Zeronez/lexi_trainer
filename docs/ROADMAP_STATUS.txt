@@ -66,14 +66,14 @@ Current sprint (this turn)
 [x] Frontend-agent: add vocabulary training screen with basic task execution flow
 [x] Git-agent: commit + push localization + vocabulary flow milestone to origin/main
 [x] QA-agent: switch tests to real Supabase initialization in CI
-[ ] Git-agent: commit + push hotfix for real-Supabase tests in CI
+[x] Git-agent: commit + push hotfix for real-Supabase tests in CI
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 75985c9
+- b02966f
 
 Current blockers:
 - Achievements UI and admin section are not implemented yet.
