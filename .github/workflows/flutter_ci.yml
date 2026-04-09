@@ -11,6 +11,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
 
     steps:
       - name: Checkout repository
@@ -47,12 +50,12 @@ jobs:
       - name: Validate Supabase test secrets
         if: ${{ hashFiles('pubspec.yaml') != '' }}
         run: |
-          test -n "${{ secrets.SUPABASE_URL }}" || (echo "Missing secret: SUPABASE_URL" && exit 1)
-          test -n "${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" || (echo "Missing secret: SUPABASE_PUBLISHABLE_KEY" && exit 1)
+          test -n "$SUPABASE_URL" || (echo "Missing SUPABASE_URL (set as Secret or Variable)" && exit 1)
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || (echo "Missing SUPABASE_PUBLISHABLE_KEY (set as Secret or Variable)" && exit 1)
 
       - name: Test
         run: >
           flutter test
-          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          --dart-define=SUPABASE_URL=$SUPABASE_URL
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
         if: ${{ hashFiles('pubspec.yaml') != '' }}

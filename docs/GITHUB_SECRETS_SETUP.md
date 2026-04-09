@@ -13,7 +13,7 @@ Add these secrets in GitHub:
 Where to add:
 
 1. GitHub repository -> Settings -> Secrets and variables -> Actions.
-2. Create each secret with the exact name above.
+2. Create each value either as `Repository secret` or `Repository variable` with the exact name above.
 
 Security notes:
 
