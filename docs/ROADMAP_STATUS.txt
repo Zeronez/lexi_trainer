@@ -83,14 +83,14 @@ Current sprint (this turn)
 [x] Git-agent: commit + push analyzer hotfix for role import and live-test lint
 [x] QA-agent: add initial domain/use-case unit tests (vocabulary)
 [x] QA-agent: add reusable test data factories and mocks
-[ ] Git-agent: commit + push Phase 4 completion milestone to origin/main
+[x] Git-agent: commit + push Phase 4 completion milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 17759f2
+- 60deca9
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
