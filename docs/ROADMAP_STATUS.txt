@@ -84,13 +84,16 @@ Current sprint (this turn)
 [x] QA-agent: add initial domain/use-case unit tests (vocabulary)
 [x] QA-agent: add reusable test data factories and mocks
 [x] Git-agent: commit + push Phase 4 completion milestone to origin/main
+[x] Frontend-agent: replace admin stubs with live Supabase data + create dialogs
+[x] QA-agent: update admin screen test with Riverpod provider overrides
+[x] Git-agent: commit + push Sprint A admin real-data milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 60deca9
+- 8f7dd67
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
