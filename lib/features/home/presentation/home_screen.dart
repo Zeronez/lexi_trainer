@@ -5,7 +5,7 @@ import 'package:lexi_trainer/core/auth/user_role.dart';
 import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/admin/presentation/admin_dashboard_screen.dart';
-import 'package:lexi_trainer/features/vocabulary/presentation/vocabulary_training_screen.dart';
+import 'package:lexi_trainer/features/learning/presentation/learning_assignments_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -44,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) => const VocabularyTrainingScreen(),
+                        builder: (_) => const LearningAssignmentsScreen(),
                       ),
                     );
                   },

@@ -2,23 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 
 class VocabularyTrainingScreen extends StatefulWidget {
-  const VocabularyTrainingScreen({super.key});
+  const VocabularyTrainingScreen({
+    super.key,
+    this.words = const [],
+    this.translateToRussian = false,
+  });
+
+  final List<TrainingWordInput> words;
+  final bool translateToRussian;
 
   @override
   State<VocabularyTrainingScreen> createState() =>
       _VocabularyTrainingScreenState();
 }
 
+class TrainingWordInput {
+  const TrainingWordInput({required this.russian, required this.english});
+
+  final String russian;
+  final String english;
+}
+
 class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
   final _answerController = TextEditingController();
 
-  final List<_TaskWord> _words = const [
-    _TaskWord(russian: 'яблоко', english: 'apple'),
-    _TaskWord(russian: 'книга', english: 'book'),
-    _TaskWord(russian: 'вода', english: 'water'),
-    _TaskWord(russian: 'солнце', english: 'sun'),
-    _TaskWord(russian: 'школа', english: 'school'),
+  static const List<TrainingWordInput> _devFallbackWords = [
+    TrainingWordInput(russian: 'яблоко', english: 'apple'),
+    TrainingWordInput(russian: 'книга', english: 'book'),
+    TrainingWordInput(russian: 'вода', english: 'water'),
+    TrainingWordInput(russian: 'солнце', english: 'sun'),
+    TrainingWordInput(russian: 'школа', english: 'school'),
   ];
+
+  late final List<TrainingWordInput> _words;
 
   int _index = 0;
   int _correctAnswers = 0;
@@ -26,6 +42,16 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
   bool _checked = false;
 
   bool get _isCompleted => _index >= _words.length;
+  String get _targetLanguage =>
+      widget.translateToRussian ? 'русский' : 'английский';
+
+  @override
+  void initState() {
+    super.initState();
+    _words = widget.words.isEmpty
+        ? _devFallbackWords
+        : List<TrainingWordInput>.unmodifiable(widget.words);
+  }
 
   @override
   void dispose() {
@@ -39,11 +65,13 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     }
     final answer = _answerController.text.trim().toLowerCase();
     if (answer.isEmpty) {
-      setState(() => _feedback = 'Введите перевод перед проверкой.');
+      setState(() {
+        _feedback = 'Введите перевод перед проверкой.';
+      });
       return;
     }
 
-    final expected = _words[_index].english.toLowerCase();
+    final expected = _expectedAnswer(_words[_index]).toLowerCase();
     final isCorrect = answer == expected;
     setState(() {
       _checked = true;
@@ -51,7 +79,8 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
         _correctAnswers += 1;
         _feedback = 'Верно';
       } else {
-        _feedback = 'Неверно. Правильный ответ: ${_words[_index].english}';
+        _feedback =
+            'Неверно. Правильный ответ: ${_expectedAnswer(_words[_index])}';
       }
     });
   }
@@ -68,10 +97,21 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     });
   }
 
+  String _promptWord(TrainingWordInput word) {
+    return widget.translateToRussian ? word.english : word.russian;
+  }
+
+  String _expectedAnswer(TrainingWordInput word) {
+    return widget.translateToRussian ? word.russian : word.english;
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final progress = _index / _words.length;
+    final nextButtonLabel = _index == _words.length - 1
+        ? 'Завершить'
+        : 'Следующее слово';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Тренировка слов')),
@@ -87,7 +127,7 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Задание: переведите слово на английский',
+                      'Задание: переведите слово на $_targetLanguage',
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -110,7 +150,7 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _words[_index].russian,
+                              _promptWord(_words[_index]),
                               style: textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w800,
                               ),
@@ -140,7 +180,7 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _checked ? _nextQuestion : _checkAnswer,
-                        child: Text(_checked ? 'Следующее слово' : 'Проверить'),
+                        child: Text(_checked ? nextButtonLabel : 'Проверить'),
                       ),
                     ),
                   ],
@@ -219,11 +259,4 @@ class _FeedbackBadge extends StatelessWidget {
       ),
     );
   }
-}
-
-class _TaskWord {
-  const _TaskWord({required this.russian, required this.english});
-
-  final String russian;
-  final String english;
 }

@@ -28,7 +28,7 @@ Owner split:
 [x] Frontend-agent: create forms with validation for content/groups/tasks
 [ ] Backend-agent: verify/patch API compatibility for admin CRUD edge cases
 [x] QA-agent: admin rendering/CRUD widget regressions
-[ ] Git-agent: push Sprint A milestone
+[x] Git-agent: push Sprint A milestone
 Acceptance:
 [x] No static list items in admin tabs
 [x] Create actions persist rows in DB and refresh UI
@@ -36,14 +36,14 @@ Acceptance:
 
 Milestone 2 - Student Real Learning Flow (Sprint B)
 Owner split:
-[ ] Frontend-agent: replace local training words with DB tasks/words
-[ ] Frontend-agent: add assignment list (active/completed/overdue)
+[x] Frontend-agent: replace local training words with DB tasks/words
+[x] Frontend-agent: add assignment list (active/completed/overdue)
 [ ] Frontend-agent: persist executions/attempts/question_answers
-[ ] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
+[x] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
 [ ] QA-agent: lifecycle regression tests
 [ ] Git-agent: push Sprint B milestone
 Acceptance:
-[ ] Student session fully data-driven
+[x] Student session fully data-driven
 [ ] Attempts and answers persisted to DB
 [ ] Deadlines and attempt limits enforced in UI and backend
 
@@ -89,8 +89,8 @@ Cross-cutting blockers (must be resolved ASAP):
 [ ] Confirm GitHub Actions secrets/variables updated with rotated values
 
 Current active sprint:
-[-] Sprint A - Admin Real Data
-[ ] Next: Sprint B - Student Real Learning Flow
+[x] Sprint A - Admin Real Data
+[-] Sprint B - Student Real Learning Flow
 
 Handoff protocol:
 [ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]
