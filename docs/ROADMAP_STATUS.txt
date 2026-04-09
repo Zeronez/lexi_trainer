@@ -9,11 +9,11 @@ Legend:
 Global decisions:
 [x] Stack: Flutter + Supabase
 [x] State management selected: Riverpod (scalable DI, async-friendly, testability)
-[ ] Branching policy confirmed (main + feature branches)
+[x] Branching policy confirmed (main + feature branches)
 
 Phase 0 - Bootstrap & Governance
 [x] Conductor: create and maintain this roadmap with checkbox tracking
-[ ] Conductor: define Definition of Done per phase
+[x] Conductor: define Definition of Done per phase
 [x] Git-agent: ensure GitHub repo initialized, remote verified
 
 Phase 1 - Backend Foundation (Supabase)
@@ -77,6 +77,9 @@ Current sprint (this turn)
 [x] Backend-agent: add SQL сценарии для валидации RLS-политик
 [x] QA-agent: add regression widget tests for role access and training flow
 [x] Git-agent: commit + push security/qa validation milestone to origin/main
+[x] Conductor: document Definition of Done for all phases
+[x] Conductor: confirm and document branching policy
+[ ] Git-agent: commit + push governance docs milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -86,5 +89,4 @@ Last commit hash:
 - 05fc929
 
 Current blockers:
-- Definition of Done per phase is not documented yet.
 - Supabase keys were exposed outside secret storage and must be rotated immediately.

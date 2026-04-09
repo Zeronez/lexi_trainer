@@ -25,6 +25,12 @@ The project is in an early foundation stage.
 - `docs/` - project notes and roadmap status
 - `lib/` - Flutter application source code
 
+## Branching Policy
+
+- `main` is protected for stable integration.
+- Feature work uses short-lived branches: `feature/<scope>`.
+- Each logical milestone is merged/pushed to trigger CI in GitHub Actions.
+
 ## CI/CD
 
 CI is handled only through GitHub Actions.
