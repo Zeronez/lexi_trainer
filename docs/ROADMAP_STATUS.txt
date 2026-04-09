@@ -20,10 +20,10 @@ Phase 1 - Backend Foundation (Supabase)
 [x] Backend-agent: create SQL DDL for full schema (roles, groups, users profile, dictionary, tasks, gamification)
 [x] Backend-agent: add constraints, indexes, composite PKs, uniqueness
 [x] Backend-agent: map app users to auth.users via FK (uuid)
-[ ] Backend-agent: create helper triggers (updated_at, profile bootstrap if needed)
-[ ] Backend-agent: design RLS policies for group isolation and role-based admin access
-[ ] Backend-agent: create seed script for base dictionaries/statuses/roles
-[ ] Backend-agent: document migration order for Supabase
+[x] Backend-agent: create helper triggers (updated_at, profile bootstrap if needed)
+[x] Backend-agent: design RLS policies for group isolation and role-based admin access
+[x] Backend-agent: create seed script for base dictionaries/statuses/roles
+[x] Backend-agent: document migration order for Supabase
 
 Phase 2 - DevOps / CI via GitHub Actions only
 [x] DevOps-agent: create .github/workflows/flutter_ci.yml
@@ -32,7 +32,7 @@ Phase 2 - DevOps / CI via GitHub Actions only
 [x] DevOps-agent: run flutter format --set-exit-if-changed --dry-run .
 [x] DevOps-agent: run flutter analyze
 [x] DevOps-agent: run flutter test
-[ ] DevOps-agent: add status badges/instructions in README
+[x] DevOps-agent: add status badges/instructions in README
 
 Phase 3 - Frontend (Flutter app)
 [ ] Frontend-agent: scaffold Flutter app structure
@@ -46,7 +46,7 @@ Phase 3 - Frontend (Flutter app)
 Phase 4 - QA / Testing
 [ ] QA-agent: create initial unit tests for domain/use-cases
 [ ] QA-agent: create widget tests for critical screens
-[ ] QA-agent: ensure tests run only in GitHub Actions pipeline
+[x] QA-agent: ensure tests run only in GitHub Actions pipeline
 [ ] QA-agent: add test data factories/mocks
 
 Phase 5 - Integration & Security
@@ -61,10 +61,12 @@ Phase 6 - Release Operations
 [-] Git-agent: commit and push each logical milestone to trigger CI
 
 Current sprint (this turn)
-[x] Conductor: create roadmap file
-[x] Backend-agent: deliver initial DDL migration for all tables
-[x] DevOps-agent: deliver flutter_ci.yml workflow
-[ ] Git-agent: commit + push these artifacts to origin/main
+[x] Backend-agent: deliver seed migration for roles/statuses
+[x] Backend-agent: deliver helpers/triggers migration
+[x] Backend-agent: deliver RLS migration
+[x] Backend-agent: deliver migration order documentation
+[x] DevOps-agent: deliver README with CI badge/instructions
+[ ] Git-agent: commit + push this milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
