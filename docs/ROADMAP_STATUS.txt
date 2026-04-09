@@ -68,14 +68,14 @@ Current sprint (this turn)
 [x] QA-agent: switch tests to real Supabase initialization in CI
 [x] Git-agent: commit + push hotfix for real-Supabase tests in CI
 [x] Frontend-agent: implement achievements/progress UI screen
-[ ] Git-agent: commit + push achievements milestone to origin/main
+[x] Git-agent: commit + push achievements milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- b02966f
+- de76b61
 
 Current blockers:
 - Admin section is not implemented yet.
