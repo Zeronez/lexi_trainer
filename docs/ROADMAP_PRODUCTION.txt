@@ -38,14 +38,14 @@ Milestone 2 - Student Real Learning Flow (Sprint B)
 Owner split:
 [x] Frontend-agent: replace local training words with DB tasks/words
 [x] Frontend-agent: add assignment list (active/completed/overdue)
-[ ] Frontend-agent: persist executions/attempts/question_answers
+[x] Frontend-agent: persist executions/attempts/question_answers
 [x] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
 [ ] QA-agent: lifecycle regression tests
 [x] Git-agent: push Sprint B milestone
 Acceptance:
 [x] Student session fully data-driven
-[ ] Attempts and answers persisted to DB
-[ ] Deadlines and attempt limits enforced in UI and backend
+[x] Attempts and answers persisted to DB
+[x] Deadlines and attempt limits enforced in UI and backend
 
 Milestone 3 - Achievements & Notifications Live (Sprint C)
 Owner split:

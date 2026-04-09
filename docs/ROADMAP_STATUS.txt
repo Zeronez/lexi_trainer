@@ -89,9 +89,10 @@ Current sprint (this turn)
 [x] Git-agent: commit + push Sprint A admin real-data milestone to origin/main
 [x] Backend-agent: add RPC lifecycle functions for task start/attempt/answer/complete
 [x] Frontend-agent: add real assignments screen and DB-driven training entrypoint
-[ ] Frontend-agent: persist attempts and question answers from training session to DB
+[x] Frontend-agent: persist attempts and question answers from training session to DB
 [ ] QA-agent: lifecycle regressions for assignment execution persistence
 [x] Git-agent: commit + push Sprint B milestone to origin/main
+[x] QA-agent: add persistence flow regression contract tests
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -102,4 +103,4 @@ Last commit hash:
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
-- Student flow persistence (attempts/question_answers write path) is not implemented yet.
+- QA lifecycle regressions are contract-level; needs final binding to production widget path.

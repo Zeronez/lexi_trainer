@@ -40,7 +40,9 @@ class _LearningAssignmentsScreenState
         return;
       }
 
-      await repository.startAssignment(taskId: assignment.id);
+      final taskExecutionId = await repository.startAssignment(
+        taskId: assignment.id,
+      );
 
       if (!mounted) {
         return;
@@ -49,10 +51,14 @@ class _LearningAssignmentsScreenState
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => VocabularyTrainingScreen(
+            learningRepository: repository,
+            taskId: assignment.id,
+            taskExecutionId: taskExecutionId,
             translateToRussian: assignment.translateToRussian,
             words: [
               for (final word in words)
                 TrainingWordInput(
+                  id: word.id,
                   russian: word.russianWord,
                   english: word.englishTranslation,
                 ),

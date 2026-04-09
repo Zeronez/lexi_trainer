@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
+import 'package:lexi_trainer/features/learning/data/repositories/learning_repository.dart';
 
 class VocabularyTrainingScreen extends StatefulWidget {
   const VocabularyTrainingScreen({
     super.key,
     this.words = const [],
     this.translateToRussian = false,
+    this.taskId,
+    this.taskExecutionId,
+    this.learningRepository,
   });
 
   final List<TrainingWordInput> words;
   final bool translateToRussian;
+  final int? taskId;
+  final int? taskExecutionId;
+  final LearningRepository? learningRepository;
 
   @override
   State<VocabularyTrainingScreen> createState() =>
@@ -17,8 +24,13 @@ class VocabularyTrainingScreen extends StatefulWidget {
 }
 
 class TrainingWordInput {
-  const TrainingWordInput({required this.russian, required this.english});
+  const TrainingWordInput({
+    this.id,
+    required this.russian,
+    required this.english,
+  });
 
+  final int? id;
   final String russian;
   final String english;
 }
@@ -38,10 +50,20 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
 
   int _index = 0;
   int _correctAnswers = 0;
+  int? _attemptId;
+  Future<int?>? _attemptFuture;
+  DateTime? _attemptStartedAt;
   String? _feedback;
   bool _checked = false;
+  bool _isSavingAnswer = false;
+  bool _isCompletingSession = false;
+  bool _completionRequested = false;
 
   bool get _isCompleted => _index >= _words.length;
+  bool get _hasPersistenceContext =>
+      widget.learningRepository != null &&
+      widget.taskId != null &&
+      widget.taskExecutionId != null;
   String get _targetLanguage =>
       widget.translateToRussian ? 'русский' : 'английский';
 
@@ -59,11 +81,11 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     super.dispose();
   }
 
-  void _checkAnswer() {
+  Future<void> _checkAnswer() async {
     if (_checked || _isCompleted) {
       return;
     }
-    final answer = _answerController.text.trim().toLowerCase();
+    final answer = _answerController.text.trim();
     if (answer.isEmpty) {
       setState(() {
         _feedback = 'Введите перевод перед проверкой.';
@@ -71,8 +93,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
       return;
     }
 
-    final expected = _expectedAnswer(_words[_index]).toLowerCase();
-    final isCorrect = answer == expected;
+    final word = _words[_index];
+    final expected = _expectedAnswer(word).toLowerCase();
+    final isCorrect = answer.toLowerCase() == expected;
     setState(() {
       _checked = true;
       if (isCorrect) {
@@ -83,18 +106,144 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
             'Неверно. Правильный ответ: ${_expectedAnswer(_words[_index])}';
       }
     });
-  }
 
-  void _nextQuestion() {
-    if (!_checked) {
+    if (!_hasPersistenceContext) {
       return;
     }
+
+    setState(() => _isSavingAnswer = true);
+    await _persistAnswer(
+      word: word,
+      enteredAnswer: answer,
+      isCorrect: isCorrect,
+    );
+    if (mounted) {
+      setState(() => _isSavingAnswer = false);
+    }
+  }
+
+  Future<void> _nextQuestion() async {
+    if (!_checked || _isCompletingSession) {
+      return;
+    }
+    final shouldCompleteSession = _index == _words.length - 1;
+
     setState(() {
       _index += 1;
       _checked = false;
       _feedback = null;
       _answerController.clear();
     });
+
+    if (shouldCompleteSession) {
+      await _completeSession();
+    }
+  }
+
+  Future<void> _persistAnswer({
+    required TrainingWordInput word,
+    required String enteredAnswer,
+    required bool isCorrect,
+  }) async {
+    final repository = widget.learningRepository;
+    final wordId = word.id;
+    if (repository == null || widget.taskExecutionId == null) {
+      return;
+    }
+
+    if (wordId == null) {
+      _showPersistenceError('Не удалось сохранить ответ: у слова нет id.');
+      return;
+    }
+
+    final answeredAt = DateTime.now();
+    try {
+      final attemptId = await _ensureAttempt(answeredAt);
+      if (attemptId == null) {
+        return;
+      }
+
+      await repository.submitQuestionAnswer(
+        attemptId: attemptId,
+        wordId: wordId,
+        enteredAnswer: enteredAnswer,
+        isCorrect: isCorrect,
+      );
+      await repository.updateAttemptEndedAt(
+        attemptId: attemptId,
+        endedAt: answeredAt,
+      );
+    } catch (error) {
+      _showPersistenceError('Не удалось сохранить ответ: $error');
+    }
+  }
+
+  Future<int?> _ensureAttempt(DateTime answeredAt) {
+    if (_attemptId != null) {
+      return Future.value(_attemptId);
+    }
+
+    if (_attemptFuture != null) {
+      return _attemptFuture!;
+    }
+
+    final repository = widget.learningRepository;
+    final taskExecutionId = widget.taskExecutionId;
+    if (repository == null || taskExecutionId == null) {
+      return Future.value(null);
+    }
+
+    final startedAt = _attemptStartedAt ?? answeredAt;
+    _attemptStartedAt = startedAt;
+    _attemptFuture = repository
+        .submitAttempt(
+          taskExecutionId: taskExecutionId,
+          startedAt: startedAt,
+          endedAt: answeredAt,
+        )
+        .then((attemptId) {
+          _attemptId = attemptId;
+          return attemptId;
+        })
+        .whenComplete(() => _attemptFuture = null);
+
+    return _attemptFuture!;
+  }
+
+  Future<void> _completeSession() async {
+    final repository = widget.learningRepository;
+    final taskExecutionId = widget.taskExecutionId;
+    if (!_hasPersistenceContext ||
+        repository == null ||
+        taskExecutionId == null ||
+        _completionRequested) {
+      return;
+    }
+
+    _completionRequested = true;
+    if (mounted) {
+      setState(() => _isCompletingSession = true);
+    }
+
+    try {
+      await repository.completeTaskExecution(taskExecutionId: taskExecutionId);
+    } catch (error) {
+      _showPersistenceError('Не удалось завершить задание: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isCompletingSession = false);
+      }
+    }
+  }
+
+  void _showPersistenceError(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _promptWord(TrainingWordInput word) {
@@ -112,6 +261,7 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     final nextButtonLabel = _index == _words.length - 1
         ? 'Завершить'
         : 'Следующее слово';
+    final isBusy = _isSavingAnswer || _isCompletingSession;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Тренировка слов')),
@@ -179,8 +329,18 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _checked ? _nextQuestion : _checkAnswer,
-                        child: Text(_checked ? nextButtonLabel : 'Проверить'),
+                        onPressed: isBusy
+                            ? null
+                            : (_checked ? _nextQuestion : _checkAnswer),
+                        child: isBusy
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(_checked ? nextButtonLabel : 'Проверить'),
                       ),
                     ),
                   ],

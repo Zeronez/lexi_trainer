@@ -76,7 +76,85 @@ class LearningRepository {
         .toList();
   }
 
-  Future<void> startAssignment({required int taskId}) async {
-    await _client.rpc('start_task_execution', params: {'p_task_id': taskId});
+  Future<int> startAssignment({required int taskId}) async {
+    final executionId = await _client.rpc(
+      'start_task_execution',
+      params: {'p_task_id': taskId},
+    );
+
+    return _readRpcId(executionId, 'task execution');
   }
+
+  Future<int> submitAttempt({
+    required int taskExecutionId,
+    required DateTime startedAt,
+    required DateTime endedAt,
+  }) async {
+    final attemptId = await _client.rpc(
+      'submit_attempt',
+      params: {
+        'p_task_execution_id': taskExecutionId,
+        'p_started_at': _toSupabaseTimestamp(startedAt),
+        'p_ended_at': _toSupabaseTimestamp(endedAt),
+      },
+    );
+
+    return _readRpcId(attemptId, 'attempt');
+  }
+
+  Future<int> submitQuestionAnswer({
+    required int attemptId,
+    required int wordId,
+    required String enteredAnswer,
+    required bool isCorrect,
+  }) async {
+    final answerId = await _client.rpc(
+      'submit_question_answer',
+      params: {
+        'p_attempt_id': attemptId,
+        'p_word_id': wordId,
+        'p_entered_answer': enteredAnswer,
+        'p_is_correct': isCorrect,
+      },
+    );
+
+    return _readRpcId(answerId, 'question answer');
+  }
+
+  Future<void> updateAttemptEndedAt({
+    required int attemptId,
+    required DateTime endedAt,
+  }) async {
+    await _client
+        .from('attempts')
+        .update({'ended_at': _toSupabaseTimestamp(endedAt)})
+        .eq('id', attemptId);
+  }
+
+  Future<void> completeTaskExecution({required int taskExecutionId}) async {
+    await _client.rpc(
+      'complete_task_execution',
+      params: {'p_task_execution_id': taskExecutionId},
+    );
+  }
+}
+
+int _readRpcId(Object? value, String entityName) {
+  if (value is int) {
+    return value;
+  }
+
+  if (value is num) {
+    return value.toInt();
+  }
+
+  if (value is String) {
+    return int.parse(value);
+  }
+
+  throw FormatException('Не удалось прочитать id для $entityName.');
+}
+
+String _toSupabaseTimestamp(DateTime value) {
+  return value.toUtc().toIso8601String();
 }
