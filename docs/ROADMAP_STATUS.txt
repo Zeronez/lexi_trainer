@@ -56,7 +56,7 @@ Phase 5 - Integration & Security
 [ ] QA-agent: add regression tests for permissions and task flow
 
 Phase 6 - Release Operations
-[ ] DevOps-agent: add environments/secrets guidance for GitHub
+[x] DevOps-agent: add environments/secrets guidance for GitHub
 [ ] DevOps-agent: optional deploy jobs (if requested later)
 [-] Git-agent: commit and push each logical milestone to trigger CI
 
@@ -76,3 +76,4 @@ Last commit hash:
 Current blockers:
 - No Supabase client integration in Flutter yet.
 - Auth and learning flows are not implemented yet.
+- Supabase keys were exposed outside secret storage and must be rotated immediately.
