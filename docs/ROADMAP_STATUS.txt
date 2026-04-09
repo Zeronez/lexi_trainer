@@ -52,8 +52,8 @@ Phase 4 - QA / Testing
 Phase 5 - Integration & Security
 [x] Backend-agent: connect Flutter client to Supabase Auth + DB
 [x] Frontend-agent: enforce role-based navigation
-[ ] Backend-agent: validate RLS with test scenarios
-[ ] QA-agent: add regression tests for permissions and task flow
+[x] Backend-agent: validate RLS with test scenarios
+[x] QA-agent: add regression tests for permissions and task flow
 
 Phase 6 - Release Operations
 [x] DevOps-agent: add environments/secrets guidance for GitHub
@@ -74,6 +74,9 @@ Current sprint (this turn)
 [x] Frontend-agent: implement admin section screens (content/groups/tasks)
 [x] Frontend-agent: add role-based access to admin section (admin/teacher only)
 [x] Git-agent: commit + push admin milestone to origin/main
+[x] Backend-agent: add SQL сценарии для валидации RLS-политик
+[x] QA-agent: add regression widget tests for role access and training flow
+[ ] Git-agent: commit + push security/qa validation milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -83,5 +86,5 @@ Last commit hash:
 - e847075
 
 Current blockers:
-- Backend RLS validation scenarios and permissions regression tests are not implemented yet.
+- Definition of Done per phase is not documented yet.
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
