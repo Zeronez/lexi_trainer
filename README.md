@@ -23,6 +23,7 @@ The project is in an early foundation stage.
 - `.github/workflows/` - GitHub Actions workflows
 - `supabase/` - database migrations and backend setup
 - `docs/` - project notes and roadmap status
+- `lib/` - Flutter application source code
 
 ## CI/CD
 
@@ -37,3 +38,9 @@ The workflow in `.github/workflows/flutter_ci.yml` runs on `push` and `pull_requ
 ## How CI Works
 
 The pipeline is designed to catch formatting issues, static analysis warnings, and test failures before changes are merged. This keeps the main branch stable and gives fast feedback during development.
+
+## Running With Supabase
+
+Pass runtime configuration through `--dart-define` values:
+
+`flutter run --dart-define=SUPABASE_URL=<your_project_url> --dart-define=SUPABASE_PUBLISHABLE_KEY=<your_publishable_key>`

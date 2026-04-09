@@ -4,13 +4,18 @@ import 'package:lexi_trainer/core/theme/app_theme.dart';
 import 'package:lexi_trainer/features/auth/presentation/auth_screen.dart';
 
 void main() {
-  testWidgets('renders auth placeholder', (tester) async {
+  testWidgets('AuthScreen renders email password and auth actions', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(theme: AppTheme.light, home: const AuthScreen()),
     );
 
-    expect(find.text('Lexi Trainer'), findsOneWidget);
-    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Sign Up'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
   });
 }

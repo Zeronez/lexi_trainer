@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lexi_trainer/core/theme/app_theme.dart';
-import 'package:lexi_trainer/features/home/presentation/home_screen.dart';
+import 'package:lexi_trainer/features/auth/presentation/auth_gate.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -11,7 +11,7 @@ class App extends StatelessWidget {
       title: 'Lexi Trainer',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const HomeScreen(),
+      home: const AuthGate(),
     );
   }
 }
