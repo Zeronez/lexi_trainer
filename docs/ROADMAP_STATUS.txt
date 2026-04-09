@@ -66,8 +66,14 @@ Current sprint (this turn)
 [x] Backend-agent: deliver RLS migration
 [x] Backend-agent: deliver migration order documentation
 [x] DevOps-agent: deliver README with CI badge/instructions
-[ ] Git-agent: commit + push this milestone to origin/main
+[x] Git-agent: commit + push this milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
-[ ] Conductor: include last commit hash and pending blockers
+[x] Conductor: include last commit hash and pending blockers
+
+Last commit hash:
+- 6f216f7
+
+Current blockers:
+- No Flutter app scaffold yet, so CI Flutter steps are conditionally skipped until `pubspec.yaml` appears.
