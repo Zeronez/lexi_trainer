@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
+import 'package:lexi_trainer/core/auth/user_role.dart';
 import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/admin/presentation/admin_dashboard_screen.dart';
