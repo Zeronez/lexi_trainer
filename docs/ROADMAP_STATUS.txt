@@ -91,14 +91,14 @@ Current sprint (this turn)
 [x] Frontend-agent: add real assignments screen and DB-driven training entrypoint
 [ ] Frontend-agent: persist attempts and question answers from training session to DB
 [ ] QA-agent: lifecycle regressions for assignment execution persistence
-[ ] Git-agent: commit + push Sprint B milestone to origin/main
+[x] Git-agent: commit + push Sprint B milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- ad859c2
+- c5af2d9
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.

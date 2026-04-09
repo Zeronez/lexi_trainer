@@ -41,7 +41,7 @@ Owner split:
 [ ] Frontend-agent: persist executions/attempts/question_answers
 [x] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
 [ ] QA-agent: lifecycle regression tests
-[ ] Git-agent: push Sprint B milestone
+[x] Git-agent: push Sprint B milestone
 Acceptance:
 [x] Student session fully data-driven
 [ ] Attempts and answers persisted to DB
