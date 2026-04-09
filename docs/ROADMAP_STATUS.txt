@@ -65,14 +65,14 @@ Current sprint (this turn)
 [x] Frontend-agent: implement AuthGate + AuthScreen (sign in/sign up)
 [x] QA-agent: add widget smoke tests for AuthScreen/AuthGate
 [x] DevOps-agent: fix CI formatting command (`dart format`)
-[ ] Git-agent: commit + push auth foundation milestone to origin/main
+[x] Git-agent: commit + push auth foundation milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 69d7d83
+- a34526a
 
 Current blockers:
 - Vocabulary learning flows and admin section are not implemented yet.
