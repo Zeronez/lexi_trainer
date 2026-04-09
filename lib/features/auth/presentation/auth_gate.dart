@@ -31,7 +31,8 @@ class _AuthGateState extends State<AuthGate> {
   void initState() {
     super.initState();
 
-    final auth = (widget.initialSession == null || widget.authStateChanges == null)
+    final auth =
+        (widget.initialSession == null || widget.authStateChanges == null)
         ? Supabase.instance.client.auth
         : null;
     _session = widget.initialSession ?? auth?.currentSession;

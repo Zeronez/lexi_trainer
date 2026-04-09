@@ -12,10 +12,10 @@ void main() {
     );
 
     expect(find.byType(TextFormField), findsNWidgets(2));
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Sign In'), findsOneWidget);
-    expect(find.text('Sign Up'), findsOneWidget);
-    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Эл. почта'), findsOneWidget);
+    expect(find.text('Пароль'), findsOneWidget);
+    expect(find.text('Вход'), findsOneWidget);
+    expect(find.text('Регистрация'), findsOneWidget);
+    expect(find.text('Войти'), findsOneWidget);
   });
 }

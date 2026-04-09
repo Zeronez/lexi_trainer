@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
+import 'package:lexi_trainer/features/vocabulary/presentation/vocabulary_training_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Build vocabulary in calm, focused sessions.',
+                'Изучайте лексику в спокойных и коротких сессиях.',
                 style: textTheme.titleMedium?.copyWith(height: 1.35),
               ),
               const SizedBox(height: 32),
@@ -34,8 +35,14 @@ class HomeScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Start training'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const VocabularyTrainingScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Начать тренировку'),
                 ),
               ),
             ],
@@ -76,14 +83,14 @@ class _ProgressCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Weekly progress',
+                        'Прогресс за неделю',
                         style: textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '18 of 30 words learned',
+                        'Изучено 18 из 30 слов',
                         style: textTheme.bodyMedium,
                       ),
                     ],

@@ -39,7 +39,7 @@ Phase 3 - Frontend (Flutter app)
 [x] Frontend-agent: implement ThemeData with required palette
 [x] Frontend-agent: set up Riverpod architecture layers (app/core/features)
 [x] Frontend-agent: auth flow UI (sign in/sign up)
-[ ] Frontend-agent: vocabulary learning screens + task execution flow
+[x] Frontend-agent: vocabulary learning screens + task execution flow
 [ ] Frontend-agent: achievements/progress UI components
 [ ] Frontend-agent: admin section screens (content/groups/tasks management)
 
@@ -61,11 +61,10 @@ Phase 6 - Release Operations
 [-] Git-agent: commit and push each logical milestone to trigger CI
 
 Current sprint (this turn)
-[x] Frontend-agent: integrate Supabase Flutter bootstrap via --dart-define config
-[x] Frontend-agent: implement AuthGate + AuthScreen (sign in/sign up)
-[x] QA-agent: add widget smoke tests for AuthScreen/AuthGate
-[x] DevOps-agent: fix CI formatting command (`dart format`)
-[x] Git-agent: commit + push auth foundation milestone to origin/main
+[x] Frontend-agent: localize UI to Russian audience
+[x] DevOps-agent: align code formatting with CI (`dart format`)
+[x] Frontend-agent: add vocabulary training screen with basic task execution flow
+[ ] Git-agent: commit + push localization + vocabulary flow milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -75,5 +74,5 @@ Last commit hash:
 - a34526a
 
 Current blockers:
-- Vocabulary learning flows and admin section are not implemented yet.
+- Achievements UI and admin section are not implemented yet.
 - Supabase keys were exposed outside secret storage and must be rotated immediately.

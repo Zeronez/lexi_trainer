@@ -57,7 +57,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (!_isSignIn && response.session == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Check your email to confirm your account.'),
+            content: Text('Подтвердите регистрацию по ссылке из письма.'),
           ),
         );
       }
@@ -72,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> {
         return;
       }
 
-      setState(() => _errorText = 'Something went wrong. Please try again.');
+      setState(() => _errorText = 'Произошла ошибка. Попробуйте еще раз.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -114,7 +114,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Sign in to keep your vocabulary practice synced.',
+                    'Войдите, чтобы сохранить ваш учебный прогресс.',
                     style: textTheme.titleMedium?.copyWith(height: 1.35),
                   ),
                   const SizedBox(height: 32),
@@ -137,16 +137,16 @@ class _AuthScreenState extends State<AuthScreen> {
                               textInputAction: TextInputAction.next,
                               autofillHints: const [AutofillHints.email],
                               decoration: const InputDecoration(
-                                labelText: 'Email',
+                                labelText: 'Эл. почта',
                                 prefixIcon: Icon(Icons.mail_outline),
                               ),
                               validator: (value) {
                                 final email = value?.trim() ?? '';
                                 if (email.isEmpty) {
-                                  return 'Enter your email.';
+                                  return 'Введите адрес электронной почты.';
                                 }
                                 if (!email.contains('@')) {
-                                  return 'Enter a valid email.';
+                                  return 'Введите корректный адрес.';
                                 }
                                 return null;
                               },
@@ -159,12 +159,12 @@ class _AuthScreenState extends State<AuthScreen> {
                               autofillHints: const [AutofillHints.password],
                               onFieldSubmitted: (_) => _submit(),
                               decoration: const InputDecoration(
-                                labelText: 'Password',
+                                labelText: 'Пароль',
                                 prefixIcon: Icon(Icons.lock_outline),
                               ),
                               validator: (value) {
                                 if ((value ?? '').length < 6) {
-                                  return 'Use at least 6 characters.';
+                                  return 'Минимум 6 символов.';
                                 }
                                 return null;
                               },
@@ -184,7 +184,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                       ),
                                     )
                                   : Text(
-                                      _isSignIn ? 'Sign in' : 'Create account',
+                                      _isSignIn ? 'Войти' : 'Создать аккаунт',
                                     ),
                             ),
                           ],
@@ -219,12 +219,12 @@ class _AuthModeSwitch extends StatelessWidget {
       child: Row(
         children: [
           _AuthModeTab(
-            label: 'Sign In',
+            label: 'Вход',
             isSelected: mode == _AuthMode.signIn,
             onTap: () => onModeChanged(_AuthMode.signIn),
           ),
           _AuthModeTab(
-            label: 'Sign Up',
+            label: 'Регистрация',
             isSelected: mode == _AuthMode.signUp,
             onTap: () => onModeChanged(_AuthMode.signUp),
           ),

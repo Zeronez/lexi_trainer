@@ -10,7 +10,7 @@ void main() {
     );
 
     expect(find.text('Lexi Trainer'), findsOneWidget);
-    expect(find.text('Sign in'), findsOneWidget);
-    expect(find.text('Sign Up'), findsOneWidget);
+    expect(find.text('Войти'), findsOneWidget);
+    expect(find.text('Регистрация'), findsOneWidget);
   });
 }
