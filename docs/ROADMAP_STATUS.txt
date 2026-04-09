@@ -64,14 +64,14 @@ Current sprint (this turn)
 [x] Frontend-agent: initialize Flutter mobile app scaffold
 [x] Frontend-agent: add Riverpod and app architecture skeleton
 [x] Frontend-agent: implement required ThemeData palette and starter home screen
-[ ] Git-agent: commit + push frontend scaffold milestone to origin/main
+[x] Git-agent: commit + push frontend scaffold milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- aa47fbb
+- 456a413
 
 Current blockers:
 - No Supabase client integration in Flutter yet.
