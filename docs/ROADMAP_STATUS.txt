@@ -35,9 +35,9 @@ Phase 2 - DevOps / CI via GitHub Actions only
 [x] DevOps-agent: add status badges/instructions in README
 
 Phase 3 - Frontend (Flutter app)
-[ ] Frontend-agent: scaffold Flutter app structure
-[ ] Frontend-agent: implement ThemeData with required palette
-[ ] Frontend-agent: set up Riverpod architecture layers (app/core/features)
+[x] Frontend-agent: scaffold Flutter app structure
+[x] Frontend-agent: implement ThemeData with required palette
+[x] Frontend-agent: set up Riverpod architecture layers (app/core/features)
 [ ] Frontend-agent: auth flow UI (sign in/sign up)
 [ ] Frontend-agent: vocabulary learning screens + task execution flow
 [ ] Frontend-agent: achievements/progress UI components
@@ -61,19 +61,18 @@ Phase 6 - Release Operations
 [-] Git-agent: commit and push each logical milestone to trigger CI
 
 Current sprint (this turn)
-[x] Backend-agent: deliver seed migration for roles/statuses
-[x] Backend-agent: deliver helpers/triggers migration
-[x] Backend-agent: deliver RLS migration
-[x] Backend-agent: deliver migration order documentation
-[x] DevOps-agent: deliver README with CI badge/instructions
-[x] Git-agent: commit + push this milestone to origin/main
+[x] Frontend-agent: initialize Flutter mobile app scaffold
+[x] Frontend-agent: add Riverpod and app architecture skeleton
+[x] Frontend-agent: implement required ThemeData palette and starter home screen
+[ ] Git-agent: commit + push frontend scaffold milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 6f216f7
+- aa47fbb
 
 Current blockers:
-- No Flutter app scaffold yet, so CI Flutter steps are conditionally skipped until `pubspec.yaml` appears.
+- No Supabase client integration in Flutter yet.
+- Auth and learning flows are not implemented yet.
