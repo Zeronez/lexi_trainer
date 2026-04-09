@@ -40,7 +40,7 @@ Phase 3 - Frontend (Flutter app)
 [x] Frontend-agent: set up Riverpod architecture layers (app/core/features)
 [x] Frontend-agent: auth flow UI (sign in/sign up)
 [x] Frontend-agent: vocabulary learning screens + task execution flow
-[ ] Frontend-agent: achievements/progress UI components
+[x] Frontend-agent: achievements/progress UI components
 [ ] Frontend-agent: admin section screens (content/groups/tasks management)
 
 Phase 4 - QA / Testing
@@ -67,6 +67,8 @@ Current sprint (this turn)
 [x] Git-agent: commit + push localization + vocabulary flow milestone to origin/main
 [x] QA-agent: switch tests to real Supabase initialization in CI
 [x] Git-agent: commit + push hotfix for real-Supabase tests in CI
+[x] Frontend-agent: implement achievements/progress UI screen
+[ ] Git-agent: commit + push achievements milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -76,5 +78,5 @@ Last commit hash:
 - b02966f
 
 Current blockers:
-- Achievements UI and admin section are not implemented yet.
+- Admin section is not implemented yet.
 - Supabase keys were exposed outside secret storage and must be rotated immediately.

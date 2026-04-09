@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/vocabulary/presentation/vocabulary_training_screen.dart';
 
@@ -43,6 +44,20 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   child: const Text('Начать тренировку'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AchievementsScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Мои достижения'),
                 ),
               ),
             ],
