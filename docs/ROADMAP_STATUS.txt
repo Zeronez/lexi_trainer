@@ -1,0 +1,71 @@
+﻿Lexi Trainer - Master Roadmap (Conductor)
+Last updated: 2026-04-09
+
+Legend:
+[ ] not started
+[x] done
+[-] in progress
+
+Global decisions:
+[x] Stack: Flutter + Supabase
+[x] State management selected: Riverpod (scalable DI, async-friendly, testability)
+[ ] Branching policy confirmed (main + feature branches)
+
+Phase 0 - Bootstrap & Governance
+[x] Conductor: create and maintain this roadmap with checkbox tracking
+[ ] Conductor: define Definition of Done per phase
+[x] Git-agent: ensure GitHub repo initialized, remote verified
+
+Phase 1 - Backend Foundation (Supabase)
+[x] Backend-agent: create SQL DDL for full schema (roles, groups, users profile, dictionary, tasks, gamification)
+[x] Backend-agent: add constraints, indexes, composite PKs, uniqueness
+[x] Backend-agent: map app users to auth.users via FK (uuid)
+[ ] Backend-agent: create helper triggers (updated_at, profile bootstrap if needed)
+[ ] Backend-agent: design RLS policies for group isolation and role-based admin access
+[ ] Backend-agent: create seed script for base dictionaries/statuses/roles
+[ ] Backend-agent: document migration order for Supabase
+
+Phase 2 - DevOps / CI via GitHub Actions only
+[x] DevOps-agent: create .github/workflows/flutter_ci.yml
+[x] DevOps-agent: trigger on push/pull_request to main
+[x] DevOps-agent: install Flutter stable and cache dependencies
+[x] DevOps-agent: run flutter format --set-exit-if-changed --dry-run .
+[x] DevOps-agent: run flutter analyze
+[x] DevOps-agent: run flutter test
+[ ] DevOps-agent: add status badges/instructions in README
+
+Phase 3 - Frontend (Flutter app)
+[ ] Frontend-agent: scaffold Flutter app structure
+[ ] Frontend-agent: implement ThemeData with required palette
+[ ] Frontend-agent: set up Riverpod architecture layers (app/core/features)
+[ ] Frontend-agent: auth flow UI (sign in/sign up)
+[ ] Frontend-agent: vocabulary learning screens + task execution flow
+[ ] Frontend-agent: achievements/progress UI components
+[ ] Frontend-agent: admin section screens (content/groups/tasks management)
+
+Phase 4 - QA / Testing
+[ ] QA-agent: create initial unit tests for domain/use-cases
+[ ] QA-agent: create widget tests for critical screens
+[ ] QA-agent: ensure tests run only in GitHub Actions pipeline
+[ ] QA-agent: add test data factories/mocks
+
+Phase 5 - Integration & Security
+[ ] Backend-agent: connect Flutter client to Supabase Auth + DB
+[ ] Frontend-agent: enforce role-based navigation
+[ ] Backend-agent: validate RLS with test scenarios
+[ ] QA-agent: add regression tests for permissions and task flow
+
+Phase 6 - Release Operations
+[ ] DevOps-agent: add environments/secrets guidance for GitHub
+[ ] DevOps-agent: optional deploy jobs (if requested later)
+[-] Git-agent: commit and push each logical milestone to trigger CI
+
+Current sprint (this turn)
+[x] Conductor: create roadmap file
+[x] Backend-agent: deliver initial DDL migration for all tables
+[x] DevOps-agent: deliver flutter_ci.yml workflow
+[ ] Git-agent: commit + push these artifacts to origin/main
+
+Handoff protocol for next sessions
+[ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
+[ ] Conductor: include last commit hash and pending blockers

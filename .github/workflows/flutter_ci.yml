@@ -1,0 +1,49 @@
+﻿name: Flutter CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool/package_config.json
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Get dependencies
+        run: flutter pub get
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+
+      - name: Check formatting
+        run: flutter format --set-exit-if-changed --dry-run .
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+
+      - name: Analyze
+        run: flutter analyze
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+
+      - name: Test
+        run: flutter test
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
