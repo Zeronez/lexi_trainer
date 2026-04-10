@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
+import 'package:lexi_trainer/core/auth/sign_out_button.dart';
 import 'package:lexi_trainer/core/auth/user_role.dart';
-import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/features/admin/presentation/admin_dashboard_screen.dart';
+import 'package:lexi_trainer/features/home/presentation/monthly_assignments_card.dart';
 import 'package:lexi_trainer/features/learning/presentation/learning_assignments_screen.dart';
 import 'package:lexi_trainer/features/notifications/presentation/notifications_screen.dart';
 
@@ -23,6 +24,10 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Align(
+                alignment: Alignment.centerRight,
+                child: SignOutButton(showLabel: true),
+              ),
               const SizedBox(height: 32),
               Text(
                 'Lexi Trainer',
@@ -37,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                 style: textTheme.titleMedium?.copyWith(height: 1.35),
               ),
               const SizedBox(height: 32),
-              const _ProgressCard(),
+              const MonthlyAssignmentsCard(),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -115,63 +120,6 @@ class HomeScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProgressCard extends StatelessWidget {
-  const _ProgressCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: AppColors.success,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.trending_up, color: Colors.white),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u0437\u0430 \u043d\u0435\u0434\u0435\u043b\u044e',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\u0418\u0437\u0443\u0447\u0435\u043d\u043e 18 \u0438\u0437 30 \u0441\u043b\u043e\u0432',
-                        style: textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: const LinearProgressIndicator(minHeight: 12, value: 0.6),
-            ),
-          ],
         ),
       ),
     );

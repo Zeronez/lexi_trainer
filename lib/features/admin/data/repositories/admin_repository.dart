@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexi_trainer/features/admin/data/models/admin_list_items.dart';
+import 'package:lexi_trainer/features/admin/data/models/admin_vocabulary_word_input.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
@@ -86,6 +87,47 @@ class AdminRepository {
     });
   }
 
+  Future<void> createVocabularySetWithWords({
+    required String themeName,
+    required String cefrLevel,
+    required List<AdminVocabularyWordInput> words,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('Пользователь не авторизован.');
+    }
+    if (words.isEmpty) {
+      throw StateError('Добавьте хотя бы одно слово.');
+    }
+
+    int? vocabularySetId;
+    final createdWordIds = <int>[];
+
+    try {
+      vocabularySetId = await _insertVocabularySet(
+        themeName: themeName,
+        cefrLevel: cefrLevel,
+        userId: userId,
+      );
+
+      for (final word in words) {
+        final wordId = await _insertVocabularyWord(word);
+        createdWordIds.add(wordId);
+      }
+
+      await _linkWordsToVocabularySet(
+        vocabularySetId: vocabularySetId,
+        wordIds: createdWordIds,
+      );
+    } catch (_) {
+      await _cleanupVocabularySetDraft(
+        vocabularySetId: vocabularySetId,
+        wordIds: createdWordIds,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> createStudyGroup({required String name}) async {
     await _client.from('study_groups').insert({'name': name});
   }
@@ -107,4 +149,94 @@ class AdminRepository {
       'attempts_count': attemptsCount,
     });
   }
+
+  Future<int> _insertVocabularySet({
+    required String themeName,
+    required String cefrLevel,
+    required String userId,
+  }) async {
+    final insertedRow = await _client
+        .from('vocabulary_sets')
+        .insert({
+          'theme_name': themeName,
+          'cefr_level': cefrLevel,
+          'user_id': userId,
+        })
+        .select('id')
+        .single();
+
+    return _readInsertedId(insertedRow['id'], 'словарного набора');
+  }
+
+  Future<int> _insertVocabularyWord(AdminVocabularyWordInput word) async {
+    final insertedRow = await _client
+        .from('words')
+        .insert(word.toInsertPayload())
+        .select('id')
+        .single();
+
+    return _readInsertedId(insertedRow['id'], 'слова');
+  }
+
+  Future<void> _linkWordsToVocabularySet({
+    required int vocabularySetId,
+    required List<int> wordIds,
+  }) async {
+    if (wordIds.isEmpty) {
+      return;
+    }
+
+    await _client
+        .from('set_words_link')
+        .insert(
+          wordIds
+              .map(
+                (wordId) => {
+                  'vocabulary_set_id': vocabularySetId,
+                  'word_id': wordId,
+                },
+              )
+              .toList(growable: false),
+        );
+  }
+
+  Future<void> _cleanupVocabularySetDraft({
+    required int? vocabularySetId,
+    required List<int> wordIds,
+  }) async {
+    try {
+      if (vocabularySetId != null) {
+        await _client
+            .from('vocabulary_sets')
+            .delete()
+            .eq('id', vocabularySetId);
+      }
+    } catch (_) {
+      // Best-effort cleanup.
+    }
+
+    try {
+      if (wordIds.isNotEmpty) {
+        await _client.from('words').delete().inFilter('id', wordIds);
+      }
+    } catch (_) {
+      // Best-effort cleanup.
+    }
+  }
+}
+
+int _readInsertedId(Object? value, String entityName) {
+  if (value is int) {
+    return value;
+  }
+
+  if (value is num) {
+    return value.toInt();
+  }
+
+  if (value is String) {
+    return int.parse(value);
+  }
+
+  throw FormatException('Не удалось прочитать id для $entityName.');
 }

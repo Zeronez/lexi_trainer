@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
+import 'package:lexi_trainer/core/auth/sign_out_button.dart';
+import 'package:lexi_trainer/core/auth/user_role.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/admin/data/models/admin_list_items.dart';
+import 'package:lexi_trainer/features/admin/data/models/admin_vocabulary_word_input.dart';
 import 'package:lexi_trainer/features/admin/data/repositories/admin_repository.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -37,15 +41,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
 
     try {
-      await _repository.createVocabularySet(
+      await _repository.createVocabularySetWithWords(
         themeName: data.themeName,
         cefrLevel: data.cefrLevel,
+        words: data.words,
       );
       if (!mounted) {
         return;
       }
       _refreshSets();
-      _showMessage('Словарный набор создан.');
+      _showMessage('Словарный набор со словами создан.');
     } catch (error) {
       _showError(error);
     }
@@ -162,41 +167,125 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sets = ref.watch(adminVocabularySetsProvider);
-    final groups = ref.watch(adminStudyGroupsProvider);
-    final tasks = ref.watch(adminTasksProvider);
+    final roleAsyncValue = ref.watch(currentUserRoleProvider);
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Панель администратора'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Контент'),
-              Tab(text: 'Группы'),
-              Tab(text: 'Задания'),
-            ],
+    return roleAsyncValue.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (_, __) => _AdminAccessDeniedScreen(
+        title: 'Не удалось проверить доступ',
+        message:
+            'Проверьте соединение и попробуйте еще раз. Если ошибка повторяется, войдите в аккаунт заново.',
+        actionLabel: 'Повторить',
+        onAction: () => ref.invalidate(currentUserRoleProvider),
+      ),
+      data: (role) {
+        if (!role.canOpenAdminSection) {
+          return _AdminAccessDeniedScreen(
+            title: 'Доступ к админ-панели закрыт',
+            message:
+                'Эта страница доступна только администраторам и преподавателям.',
+            actionLabel: 'Назад',
+            onAction: () {
+              Navigator.of(context).maybePop();
+            },
+          );
+        }
+
+        final sets = ref.watch(adminVocabularySetsProvider);
+        final groups = ref.watch(adminStudyGroupsProvider);
+        final tasks = ref.watch(adminTasksProvider);
+
+        return DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('Панель администратора'),
+              actions: const [SignOutButton()],
+              bottom: const TabBar(
+                tabs: [
+                  Tab(text: 'Контент'),
+                  Tab(text: 'Группы'),
+                  Tab(text: 'Задания'),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              children: [
+                _ContentManagementTab(
+                  items: sets,
+                  onRefresh: _refreshSets,
+                  onCreate: _createSet,
+                ),
+                _GroupManagementTab(
+                  items: groups,
+                  onRefresh: _refreshGroups,
+                  onCreate: _createGroup,
+                ),
+                _TaskManagementTab(
+                  items: tasks,
+                  onRefresh: _refreshTasks,
+                  onCreate: _createTask,
+                ),
+              ],
+            ),
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _ContentManagementTab(
-              items: sets,
-              onRefresh: _refreshSets,
-              onCreate: _createSet,
+        );
+      },
+    );
+  }
+}
+
+class _AdminAccessDeniedScreen extends StatelessWidget {
+  const _AdminAccessDeniedScreen({
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String message;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Админ-раздел')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Card(
+            margin: const EdgeInsets.all(24),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(message),
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: onAction,
+                      child: Text(actionLabel),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            _GroupManagementTab(
-              items: groups,
-              onRefresh: _refreshGroups,
-              onCreate: _createGroup,
-            ),
-            _TaskManagementTab(
-              items: tasks,
-              onRefresh: _refreshTasks,
-              onCreate: _createTask,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -219,7 +308,7 @@ class _ContentManagementTab extends StatelessWidget {
     return _TabLayout<AdminVocabularySetListItem>(
       title: 'Управление словарями',
       description:
-          'Создавайте наборы слов и используйте их как основу для заданий.',
+          'Создавайте словарные наборы, наполняйте их словами и используйте как основу для заданий.',
       actionText: 'Добавить словарный набор',
       emptyText: 'Словарных наборов пока нет.',
       items: items,
@@ -347,8 +436,7 @@ class _TabLayout<T> extends StatelessWidget {
         const SizedBox(height: 16),
         items.when(
           loading: () => const _LoadingState(),
-          error: (error, stackTrace) =>
-              _ErrorState(error: error, onRetry: onRefresh),
+          error: (error, _) => _ErrorState(error: error, onRetry: onRefresh),
           data: (loadedItems) {
             if (loadedItems.isEmpty) {
               return _EmptyState(message: emptyText);
@@ -481,36 +569,160 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
   final _formKey = GlobalKey<FormState>();
   final _themeController = TextEditingController();
   final _cefrController = TextEditingController(text: 'A1');
+  final List<_VocabularyWordControllers> _wordRows = [
+    _VocabularyWordControllers(),
+  ];
 
   @override
   void dispose() {
     _themeController.dispose();
     _cefrController.dispose();
+    for (final row in _wordRows) {
+      row.dispose();
+    }
     super.dispose();
+  }
+
+  void _addWordRow() {
+    setState(() {
+      _wordRows.add(_VocabularyWordControllers());
+    });
+  }
+
+  void _removeWordRow(int index) {
+    if (_wordRows.length == 1) {
+      return;
+    }
+
+    setState(() {
+      _wordRows.removeAt(index).dispose();
+    });
+  }
+
+  List<AdminVocabularyWordInput> _buildWordInputs() {
+    return _wordRows
+        .map(
+          (row) => AdminVocabularyWordInput(
+            russianWord: row.russianController.text.trim(),
+            englishTranslation: row.englishController.text.trim(),
+            transcription: _textOrNull(row.transcriptionController.text),
+            exampleSentence: _textOrNull(row.exampleController.text),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  Widget _buildWordCard(int index, _VocabularyWordControllers controllers) {
+    final titleStyle = Theme.of(
+      context,
+    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Слово ${index + 1}', style: titleStyle),
+                const Spacer(),
+                if (_wordRows.length > 1)
+                  IconButton(
+                    tooltip: 'Удалить слово',
+                    onPressed: () => _removeWordRow(index),
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: controllers.russianController,
+              decoration: const InputDecoration(labelText: 'Русское слово'),
+              textInputAction: TextInputAction.next,
+              validator: _requiredValidator,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: controllers.englishController,
+              decoration: const InputDecoration(
+                labelText: 'Английский перевод',
+              ),
+              textInputAction: TextInputAction.next,
+              validator: _requiredValidator,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: controllers.transcriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Транскрипция (необязательно)',
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: controllers.exampleController,
+              decoration: const InputDecoration(
+                labelText: 'Пример предложения (необязательно)',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Новый словарный набор'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _themeController,
-              decoration: const InputDecoration(labelText: 'Название темы'),
-              textInputAction: TextInputAction.next,
-              validator: _requiredValidator,
-            ),
-            TextFormField(
-              controller: _cefrController,
-              decoration: const InputDecoration(labelText: 'CEFR уровень'),
-              textCapitalization: TextCapitalization.characters,
-              validator: _cefrLevelValidator,
-            ),
-          ],
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _themeController,
+                decoration: const InputDecoration(labelText: 'Название темы'),
+                textInputAction: TextInputAction.next,
+                validator: _requiredValidator,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _cefrController,
+                decoration: const InputDecoration(labelText: 'CEFR уровень'),
+                textCapitalization: TextCapitalization.characters,
+                validator: _cefrLevelValidator,
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Слова набора',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ..._wordRows.asMap().entries.map(
+                (entry) => _buildWordCard(entry.key, entry.value),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _addWordRow,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Добавить слово'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -523,10 +735,18 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             if (!_formKey.currentState!.validate()) {
               return;
             }
+            if (_wordRows.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Добавьте хотя бы одно слово.')),
+              );
+              return;
+            }
+
             Navigator.of(context).pop(
               _CreateSetData(
                 themeName: _themeController.text.trim(),
                 cefrLevel: _cefrController.text.trim().toUpperCase(),
+                words: _buildWordInputs(),
               ),
             );
           },
@@ -720,11 +940,40 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
   }
 }
 
+class _VocabularyWordControllers {
+  _VocabularyWordControllers({
+    String russianWord = '',
+    String englishTranslation = '',
+    String transcription = '',
+    String exampleSentence = '',
+  }) : russianController = TextEditingController(text: russianWord),
+       englishController = TextEditingController(text: englishTranslation),
+       transcriptionController = TextEditingController(text: transcription),
+       exampleController = TextEditingController(text: exampleSentence);
+
+  final TextEditingController russianController;
+  final TextEditingController englishController;
+  final TextEditingController transcriptionController;
+  final TextEditingController exampleController;
+
+  void dispose() {
+    russianController.dispose();
+    englishController.dispose();
+    transcriptionController.dispose();
+    exampleController.dispose();
+  }
+}
+
 class _CreateSetData {
-  const _CreateSetData({required this.themeName, required this.cefrLevel});
+  const _CreateSetData({
+    required this.themeName,
+    required this.cefrLevel,
+    required this.words,
+  });
 
   final String themeName;
   final String cefrLevel;
+  final List<AdminVocabularyWordInput> words;
 }
 
 class _CreateGroupData {
@@ -858,4 +1107,12 @@ String _formatDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
   final month = date.month.toString().padLeft(2, '0');
   return '$day.$month.${date.year}';
+}
+
+String? _textOrNull(String value) {
+  final text = value.trim();
+  if (text.isEmpty) {
+    return null;
+  }
+  return text;
 }

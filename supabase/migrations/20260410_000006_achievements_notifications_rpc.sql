@@ -1,4 +1,4 @@
-BEGIN;
+﻿BEGIN;
 
 INSERT INTO public.achievements (name, description, condition_text)
 SELECT seed.name, seed.description, seed.condition_text
@@ -123,7 +123,7 @@ BEGIN
         ORDER BY a.id
     LOOP
         INSERT INTO public.notifications (type, text)
-        VALUES ('achievement_awarded', 'Получено достижение: ' || v_achievement.name)
+        VALUES ('achievement_awarded', 'РџРѕР»СѓС‡РµРЅРѕ РґРѕСЃС‚РёР¶РµРЅРёРµ: ' || v_achievement.name)
         RETURNING id INTO v_notification_id;
 
         INSERT INTO public.notification_users_link (notification_id, user_id)
@@ -271,3 +271,4 @@ GRANT EXECUTE ON FUNCTION public.recalculate_user_achievements(UUID) TO authenti
 GRANT EXECUTE ON FUNCTION public.create_user_notification(UUID, TEXT, TEXT) TO authenticated;
 
 COMMIT;
+

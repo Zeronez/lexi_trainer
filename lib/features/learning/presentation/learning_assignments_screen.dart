@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lexi_trainer/core/auth/sign_out_button.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/learning/data/models/learning_assignment.dart';
 import 'package:lexi_trainer/features/learning/data/repositories/learning_repository.dart';
@@ -88,7 +89,10 @@ class _LearningAssignmentsScreenState
     final assignments = ref.watch(learningAssignmentsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои задания')),
+      appBar: AppBar(
+        title: const Text('Мои задания'),
+        actions: const [SignOutButton()],
+      ),
       body: SafeArea(
         child: assignments.when(
           data: (items) {
