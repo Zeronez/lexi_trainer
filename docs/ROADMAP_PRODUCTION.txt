@@ -70,7 +70,7 @@ Owner split:
 Acceptance:
 [x] Unauthorized access attempts denied across all critical tables
 [x] Permission matrix documented and covered by tests
-[ ] Extended CI suite green on main
+[x] Extended CI suite green on main
 
 Milestone 5 - Release Readiness (Sprint E)
 Owner split:

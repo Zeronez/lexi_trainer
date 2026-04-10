@@ -19,19 +19,24 @@
 - DevOps owner: release artifact generated and retained.
 
 ## Go/No-Go Checklist
-- [ ] CI green on latest `main` commit.
+- [x] CI green on latest `main` commit.
 - [ ] Release artifact created from `release_pipeline.yml`.
 - [ ] Supabase migration order executed and verified.
 - [ ] Security matrix validation executed successfully.
 - [ ] UAT checklist marked complete.
-- [ ] Rollback runbook reviewed by on-duty engineer.
+- [x] Rollback runbook reviewed by on-duty engineer.
 
 ## Approval Log
 - Product owner: [ ] Approved
 - QA owner: [ ] Approved
 - Backend owner: [ ] Approved
 - DevOps owner: [ ] Approved
-- Final decision: [ ] GO / [ ] NO-GO
+- Final decision: [ ] GO / [x] NO-GO
+
+## Evidence
+- Latest green CI: https://github.com/Zeronez/lexi_trainer/actions/runs/24222821162
+- UAT report: `docs/UAT_EXECUTION_REPORT.md`
+- RC log: `docs/RELEASE_CANDIDATE_LOG.md`
 
 ## Notes
-Use this file as the release gate source of truth for each candidate. Duplicate it per RC if needed.
+Final GO is blocked until manual `Release Readiness` workflow is run and artifact is produced.

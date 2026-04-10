@@ -1,16 +1,13 @@
-# Release Candidate Log
+﻿# Release Candidate Log
 
-Use this file to record each release candidate and the final promotion decision.
-
-## RC Entry Template
+Use this file to record each release candidate and final promotion decision.
 
 | RC | Workflow run id | Artifact link | Build commit | GO/NO-GO | Decision owner | Decision date | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| rc-2026-04-10 | N/A (manual workflow not run yet) | N/A | 17c085324e35bc8004f9f12a129595945bfa8f80 | NO-GO | Conductor | 2026-04-10 | Automatic Flutter CI is green: https://github.com/Zeronez/lexi_trainer/actions/runs/24222821162. Need manual `Release Readiness` run and artifact before GO. |
 
 ## Guidance
 
-- Record the exact GitHub Actions workflow run id for traceability.
-- Link the downloadable artifact produced by `Release Readiness`.
-- Set `GO` only when the UAT report is complete and all required checks are passed or formally waived.
-- Set `NO-GO` when any P0 gate fails or when release readiness evidence is incomplete.
+- Record exact GitHub Actions run id for `Release Readiness`.
+- Add direct artifact link from workflow run.
+- Set `GO` only after UAT report is complete and required checks are passed or formally waived.

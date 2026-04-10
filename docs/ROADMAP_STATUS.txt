@@ -114,6 +114,8 @@ Current sprint (this turn)
 [x] QA-agent: add UAT execution report and release candidate decision log templates
 [x] Backend-agent: add Sprint E read-only post-release smoke SQL script
 [x] Git-agent: commit + push Sprint E milestone to origin/main
+[x] Conductor: verify latest Flutter CI run is green (run id 24222821162)
+[x] Conductor: update UAT/RC/Sign-off docs with current NO-GO decision
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
