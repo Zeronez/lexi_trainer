@@ -1,12 +1,20 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
 import 'package:lexi_trainer/core/auth/sign_out_button.dart';
 import 'package:lexi_trainer/core/auth/user_role.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/admin/data/models/admin_list_items.dart';
+import 'package:lexi_trainer/features/admin/data/models/admin_report_metrics.dart';
+import 'package:lexi_trainer/features/admin/data/models/admin_user_list_items.dart';
 import 'package:lexi_trainer/features/admin/data/models/admin_vocabulary_word_input.dart';
 import 'package:lexi_trainer/features/admin/data/repositories/admin_repository.dart';
+import 'package:lexi_trainer/features/admin/presentation/admin_report_pdf_helper.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -31,6 +39,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     ref.invalidate(adminTasksProvider);
   }
 
+  void _refreshStudents() {
+    ref.invalidate(adminStudentsProvider);
+  }
+
+  Future<void> _showReport() async {
+    ref.invalidate(adminReportMetricsProvider);
+    await showDialog<void>(
+      context: context,
+      builder: (context) => const _ReportDialog(),
+    );
+  }
+
   Future<void> _createSet() async {
     final data = await showDialog<_CreateSetData>(
       context: context,
@@ -50,28 +70,43 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshSets();
-      _showMessage('Словарный набор со словами создан.');
+      _showMessage(
+        'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ СЃРѕ СЃР»РѕРІР°РјРё СЃРѕР·РґР°РЅ.',
+      );
     } catch (error) {
       _showError(error);
     }
   }
 
   Future<void> _createGroup() async {
-    final data = await showDialog<_CreateGroupData>(
+    final students = await _loadStudentsForGroupDialog();
+    if (!mounted || students == null) {
+      return;
+    }
+
+    final data = await showDialog<_GroupFormData>(
       context: context,
-      builder: (context) => const _CreateGroupDialog(),
+      builder: (context) => _StudyGroupFormDialog(
+        title: 'РќРѕРІР°СЏ СѓС‡РµР±РЅР°СЏ РіСЂСѓРїРїР°',
+        actionLabel: 'РЎРѕР·РґР°С‚СЊ',
+        students: students,
+      ),
     );
     if (data == null) {
       return;
     }
 
     try {
-      await _repository.createStudyGroup(name: data.name);
+      await _repository.createStudyGroup(
+        name: data.name,
+        studentIds: data.studentIds,
+      );
       if (!mounted) {
         return;
       }
       _refreshGroups();
-      _showMessage('Группа создана.');
+      _refreshStudents();
+      _showMessage('Р“СЂСѓРїРїР° СЃРѕР·РґР°РЅР°.');
     } catch (error) {
       _showError(error);
     }
@@ -86,13 +121,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     if (sets.isEmpty) {
-      _showMessage('Сначала создайте словарный набор.');
+      _showMessage(
+        'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ.',
+      );
       return;
     }
 
-    final data = await showDialog<_CreateTaskData>(
+    final data = await showDialog<_TaskFormData>(
       context: context,
-      builder: (context) => _CreateTaskDialog(sets: sets),
+      builder: (context) => _TaskFormDialog(
+        title: 'РќРѕРІРѕРµ Р·Р°РґР°РЅРёРµ',
+        actionLabel: 'РЎРѕР·РґР°С‚СЊ',
+        sets: sets,
+      ),
     );
     if (data == null) {
       return;
@@ -111,7 +152,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshTasks();
-      _showMessage('Задание создано.');
+      _showMessage('Р—Р°РґР°РЅРёРµ СЃРѕР·РґР°РЅРѕ.');
     } catch (error) {
       _showError(error);
     }
@@ -141,6 +182,267 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
   }
 
+  Future<List<AdminStudentListItem>?> _loadStudentsForGroupDialog() async {
+    final cachedStudents = ref
+        .read(adminStudentsProvider)
+        .maybeWhen(data: (students) => students, orElse: () => null);
+    if (cachedStudents != null) {
+      return cachedStudents;
+    }
+
+    try {
+      return await ref.read(adminStudentsProvider.future);
+    } catch (_) {
+      ref.invalidate(adminStudentsProvider);
+      try {
+        return await ref.read(adminStudentsProvider.future);
+      } catch (error) {
+        if (mounted) {
+          _showLoadError(error);
+        }
+        return null;
+      }
+    }
+  }
+
+  Future<void> _viewSet(AdminVocabularySetListItem item) async {
+    try {
+      final details = await _repository.fetchVocabularySetDetails(item.id);
+      if (!mounted) {
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (context) => _VocabularySetDetailsDialog(details: details),
+      );
+    } catch (error) {
+      _showLoadError(error);
+    }
+  }
+
+  Future<void> _editSet(AdminVocabularySetListItem item) async {
+    final data = await showDialog<_SetMetadataFormData>(
+      context: context,
+      builder: (context) => _SetMetadataDialog(item: item),
+    );
+    if (data == null) {
+      return;
+    }
+
+    try {
+      await _repository.updateVocabularySet(
+        id: item.id,
+        themeName: data.themeName,
+        cefrLevel: data.cefrLevel,
+      );
+      if (!mounted) {
+        return;
+      }
+      _refreshSets();
+      _refreshTasks();
+      _showMessage('РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ РѕР±РЅРѕРІР»РµРЅ.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _deleteSet(AdminVocabularySetListItem item) async {
+    final confirmed = await _confirmDelete(
+      title: 'РЈРґР°Р»РёС‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ?',
+      message:
+          'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ "${item.themeName}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ. РЎРІСЏР·Р°РЅРЅС‹Рµ Р·Р°РґР°РЅРёСЏ С‚Р°РєР¶Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ СѓРґР°Р»РµРЅС‹.',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await _repository.deleteVocabularySet(id: item.id);
+      if (!mounted) {
+        return;
+      }
+      _refreshSets();
+      _refreshTasks();
+      _showMessage('РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ СѓРґР°Р»РµРЅ.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _viewGroup(AdminStudyGroupListItem item) async {
+    try {
+      final details = await _repository.fetchStudyGroupDetails(item.id);
+      if (!mounted) {
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (context) => _StudyGroupDetailsDialog(details: details),
+      );
+    } catch (error) {
+      _showLoadError(error);
+    }
+  }
+
+  Future<void> _editGroup(AdminStudyGroupListItem item) async {
+    final students = await _loadStudentsForGroupDialog();
+    if (!mounted || students == null) {
+      return;
+    }
+
+    final data = await showDialog<_GroupFormData>(
+      context: context,
+      builder: (context) => _StudyGroupFormDialog(
+        title: 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РіСЂСѓРїРїСѓ',
+        actionLabel: 'РЎРѕС…СЂР°РЅРёС‚СЊ',
+        initialGroupId: item.id,
+        initialName: item.name,
+        students: students,
+      ),
+    );
+    if (data == null) {
+      return;
+    }
+
+    try {
+      await _repository.updateStudyGroup(
+        id: item.id,
+        name: data.name,
+        studentIds: data.studentIds,
+      );
+      if (!mounted) {
+        return;
+      }
+      _refreshGroups();
+      _refreshStudents();
+      _showMessage('Р“СЂСѓРїРїР° РѕР±РЅРѕРІР»РµРЅР°.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _deleteGroup(AdminStudyGroupListItem item) async {
+    final confirmed = await _confirmDelete(
+      title: 'РЈРґР°Р»РёС‚СЊ РіСЂСѓРїРїСѓ?',
+      message:
+          'Р“СЂСѓРїРїР° "${item.name}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅР°. РЎС‚СѓРґРµРЅС‚С‹ РѕСЃС‚Р°РЅСѓС‚СЃСЏ Р±РµР· С‚РµРєСѓС‰РµР№ РіСЂСѓРїРїС‹.',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await _repository.deleteStudyGroup(id: item.id);
+      if (!mounted) {
+        return;
+      }
+      _refreshGroups();
+      _refreshStudents();
+      _showMessage('Р“СЂСѓРїРїР° СѓРґР°Р»РµРЅР°.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _viewTask(AdminTaskListItem item) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => _TaskDetailsDialog(item: item),
+    );
+  }
+
+  Future<void> _editTask(AdminTaskListItem item) async {
+    final sets = await _loadVocabularySetsForTaskDialog();
+    if (!mounted || sets == null) {
+      return;
+    }
+    if (sets.isEmpty) {
+      _showMessage(
+        'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ.',
+      );
+      return;
+    }
+
+    final data = await showDialog<_TaskFormData>(
+      context: context,
+      builder: (context) => _TaskFormDialog(
+        title: 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ Р·Р°РґР°РЅРёРµ',
+        actionLabel: 'РЎРѕС…СЂР°РЅРёС‚СЊ',
+        sets: sets,
+        initialItem: item,
+      ),
+    );
+    if (data == null) {
+      return;
+    }
+
+    try {
+      await _repository.updateTask(
+        id: item.id,
+        vocabularySetId: data.vocabularySetId,
+        deadline: data.deadline,
+        startDate: data.startDate,
+        translateToRussian: data.translateToRussian,
+        availableAfterEnd: data.availableAfterEnd,
+        attemptsCount: data.attemptsCount,
+      );
+      if (!mounted) {
+        return;
+      }
+      _refreshTasks();
+      _showMessage('Р—Р°РґР°РЅРёРµ РѕР±РЅРѕРІР»РµРЅРѕ.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _deleteTask(AdminTaskListItem item) async {
+    final confirmed = await _confirmDelete(
+      title: 'РЈРґР°Р»РёС‚СЊ Р·Р°РґР°РЅРёРµ?',
+      message:
+          'Р—Р°РґР°РЅРёРµ РїРѕ РЅР°Р±РѕСЂСѓ "${item.vocabularySetName}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ.',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await _repository.deleteTask(id: item.id);
+      if (!mounted) {
+        return;
+      }
+      _refreshTasks();
+      _showMessage('Р—Р°РґР°РЅРёРµ СѓРґР°Р»РµРЅРѕ.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<bool> _confirmDelete({
+    required String title,
+    required String message,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('РћС‚РјРµРЅР°'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('РЈРґР°Р»РёС‚СЊ'),
+          ),
+        ],
+      ),
+    );
+
+    return confirmed ?? false;
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
@@ -151,9 +453,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Не удалось сохранить: $error')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ: $error')),
+    );
   }
 
   void _showLoadError(Object error) {
@@ -161,7 +463,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Не удалось загрузить данные: $error')),
+      SnackBar(
+        content: Text(
+          'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ: $error',
+        ),
+      ),
     );
   }
 
@@ -173,19 +479,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, __) => _AdminAccessDeniedScreen(
-        title: 'Не удалось проверить доступ',
+        title: 'РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРёС‚СЊ РґРѕСЃС‚СѓРї',
         message:
-            'Проверьте соединение и попробуйте еще раз. Если ошибка повторяется, войдите в аккаунт заново.',
-        actionLabel: 'Повторить',
+            'РџСЂРѕРІРµСЂСЊС‚Рµ СЃРѕРµРґРёРЅРµРЅРёРµ Рё РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р·. Р•СЃР»Рё РѕС€РёР±РєР° РїРѕРІС‚РѕСЂСЏРµС‚СЃСЏ, РІРѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚ Р·Р°РЅРѕРІРѕ.',
+        actionLabel: 'РџРѕРІС‚РѕСЂРёС‚СЊ',
         onAction: () => ref.invalidate(currentUserRoleProvider),
       ),
       data: (role) {
         if (!role.canOpenAdminSection) {
           return _AdminAccessDeniedScreen(
-            title: 'Доступ к админ-панели закрыт',
+            title: 'Р”РѕСЃС‚СѓРї Рє Р°РґРјРёРЅ-РїР°РЅРµР»Рё Р·Р°РєСЂС‹С‚',
             message:
-                'Эта страница доступна только администраторам и преподавателям.',
-            actionLabel: 'Назад',
+                'Р­С‚Р° СЃС‚СЂР°РЅРёС†Р° РґРѕСЃС‚СѓРїРЅР° С‚РѕР»СЊРєРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°Рј Рё РїСЂРµРїРѕРґР°РІР°С‚РµР»СЏРј.',
+            actionLabel: 'РќР°Р·Р°Рґ',
             onAction: () {
               Navigator.of(context).maybePop();
             },
@@ -193,42 +499,62 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         }
 
         final sets = ref.watch(adminVocabularySetsProvider);
-        final groups = ref.watch(adminStudyGroupsProvider);
         final tasks = ref.watch(adminTasksProvider);
+        final isAdmin = role == UserRole.admin;
+        final panelTitle = isAdmin
+            ? '\u041f\u0430\u043d\u0435\u043b\u044c \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430'
+            : '\u041f\u0430\u043d\u0435\u043b\u044c \u043f\u0440\u0435\u043f\u043e\u0434\u0430\u0432\u0430\u0442\u0435\u043b\u044f';
+        final groups = isAdmin ? ref.watch(adminStudyGroupsProvider) : null;
+        final tabs = <Tab>[
+          const Tab(text: '\u041a\u043e\u043d\u0442\u0435\u043d\u0442'),
+          if (isAdmin) const Tab(text: '\u0413\u0440\u0443\u043f\u043f\u044b'),
+          const Tab(text: '\u0417\u0430\u0434\u0430\u043d\u0438\u044f'),
+        ];
+        final tabViews = <Widget>[
+          _ContentManagementTab(
+            items: sets,
+            onRefresh: _refreshSets,
+            onCreate: _createSet,
+            onView: _viewSet,
+            onEdit: _editSet,
+            onDelete: _deleteSet,
+          ),
+          if (isAdmin)
+            _GroupManagementTab(
+              items: groups!,
+              onRefresh: _refreshGroups,
+              onCreate: _createGroup,
+              onView: _viewGroup,
+              onEdit: _editGroup,
+              onDelete: _deleteGroup,
+            ),
+          _TaskManagementTab(
+            items: tasks,
+            onRefresh: _refreshTasks,
+            onCreate: _createTask,
+            onView: _viewTask,
+            onEdit: _editTask,
+            onDelete: _deleteTask,
+          ),
+        ];
 
         return DefaultTabController(
-          length: 3,
+          length: tabs.length,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Панель администратора'),
-              actions: const [SignOutButton()],
-              bottom: const TabBar(
-                tabs: [
-                  Tab(text: 'Контент'),
-                  Tab(text: 'Группы'),
-                  Tab(text: 'Задания'),
-                ],
-              ),
-            ),
-            body: TabBarView(
-              children: [
-                _ContentManagementTab(
-                  items: sets,
-                  onRefresh: _refreshSets,
-                  onCreate: _createSet,
-                ),
-                _GroupManagementTab(
-                  items: groups,
-                  onRefresh: _refreshGroups,
-                  onCreate: _createGroup,
-                ),
-                _TaskManagementTab(
-                  items: tasks,
-                  onRefresh: _refreshTasks,
-                  onCreate: _createTask,
-                ),
+              title: Text(panelTitle),
+              actions: [
+                if (role.canOpenAdminSection)
+                  IconButton(
+                    tooltip: 'РћС‚С‡РµС‚',
+                    onPressed: _showReport,
+                    icon: const Icon(Icons.receipt_long_outlined),
+                  ),
+                const SignOutButton(),
               ],
+              bottom: TabBar(tabs: tabs),
             ),
+            body: TabBarView(children: tabViews),
           ),
         );
       },
@@ -254,7 +580,7 @@ class _AdminAccessDeniedScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Админ-раздел')),
+      appBar: AppBar(title: const Text('РђРґРјРёРЅ-СЂР°Р·РґРµР»')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
@@ -297,28 +623,37 @@ class _ContentManagementTab extends StatelessWidget {
     required this.items,
     required this.onRefresh,
     required this.onCreate,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final AsyncValue<List<AdminVocabularySetListItem>> items;
   final VoidCallback onRefresh;
   final VoidCallback onCreate;
+  final ValueChanged<AdminVocabularySetListItem> onView;
+  final ValueChanged<AdminVocabularySetListItem> onEdit;
+  final ValueChanged<AdminVocabularySetListItem> onDelete;
 
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminVocabularySetListItem>(
-      title: 'Управление словарями',
+      title: 'РЈРїСЂР°РІР»РµРЅРёРµ СЃР»РѕРІР°СЂСЏРјРё',
       description:
-          'Создавайте словарные наборы, наполняйте их словами и используйте как основу для заданий.',
-      actionText: 'Добавить словарный набор',
-      emptyText: 'Словарных наборов пока нет.',
+          'РЎРѕР·РґР°РІР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Рµ РЅР°Р±РѕСЂС‹, РЅР°РїРѕР»РЅСЏР№С‚Рµ РёС… СЃР»РѕРІР°РјРё Рё РёСЃРїРѕР»СЊР·СѓР№С‚Рµ РєР°Рє РѕСЃРЅРѕРІСѓ РґР»СЏ Р·Р°РґР°РЅРёР№.',
+      actionText: 'Р”РѕР±Р°РІРёС‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+      emptyText: 'РЎР»РѕРІР°СЂРЅС‹С… РЅР°Р±РѕСЂРѕРІ РїРѕРєР° РЅРµС‚.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'Тема: ${item.themeName}',
+        title: 'РўРµРјР°: ${item.themeName}',
         subtitle:
-            'CEFR ${item.cefrLevel} · создано: ${_formatDate(item.createdAt)}',
-        status: 'Доступно',
+            'CEFR ${item.cefrLevel} В· СЃРѕР·РґР°РЅРѕ: ${_formatDate(item.createdAt)}',
+        status: 'Р”РѕСЃС‚СѓРїРЅРѕ',
+        onView: () => onView(item),
+        onEdit: () => onEdit(item),
+        onDelete: () => onDelete(item),
       ),
     );
   }
@@ -329,27 +664,36 @@ class _GroupManagementTab extends StatelessWidget {
     required this.items,
     required this.onRefresh,
     required this.onCreate,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final AsyncValue<List<AdminStudyGroupListItem>> items;
   final VoidCallback onRefresh;
   final VoidCallback onCreate;
+  final ValueChanged<AdminStudyGroupListItem> onView;
+  final ValueChanged<AdminStudyGroupListItem> onEdit;
+  final ValueChanged<AdminStudyGroupListItem> onDelete;
 
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminStudyGroupListItem>(
-      title: 'Управление учебными группами',
+      title: 'РЈРїСЂР°РІР»РµРЅРёРµ СѓС‡РµР±РЅС‹РјРё РіСЂСѓРїРїР°РјРё',
       description:
-          'Создавайте учебные группы для дальнейшего назначения студентов и преподавателей.',
-      actionText: 'Создать группу',
-      emptyText: 'Учебных групп пока нет.',
+          'РЎРѕР·РґР°РІР°Р№С‚Рµ СѓС‡РµР±РЅС‹Рµ РіСЂСѓРїРїС‹ РґР»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ РЅР°Р·РЅР°С‡РµРЅРёСЏ СЃС‚СѓРґРµРЅС‚РѕРІ Рё РїСЂРµРїРѕРґР°РІР°С‚РµР»РµР№.',
+      actionText: 'РЎРѕР·РґР°С‚СЊ РіСЂСѓРїРїСѓ',
+      emptyText: 'РЈС‡РµР±РЅС‹С… РіСЂСѓРїРї РїРѕРєР° РЅРµС‚.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'Группа ${item.name}',
-        subtitle: 'Создана: ${_formatDate(item.createdAt)}',
-        status: 'Активна',
+        title: 'Р“СЂСѓРїРїР° ${item.name}',
+        subtitle: 'РЎРѕР·РґР°РЅР°: ${_formatDate(item.createdAt)}',
+        status: 'РђРєС‚РёРІРЅР°',
+        onView: () => onView(item),
+        onEdit: () => onEdit(item),
+        onDelete: () => onDelete(item),
       ),
     );
   }
@@ -360,27 +704,554 @@ class _TaskManagementTab extends StatelessWidget {
     required this.items,
     required this.onRefresh,
     required this.onCreate,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final AsyncValue<List<AdminTaskListItem>> items;
   final VoidCallback onRefresh;
   final VoidCallback onCreate;
+  final ValueChanged<AdminTaskListItem> onView;
+  final ValueChanged<AdminTaskListItem> onEdit;
+  final ValueChanged<AdminTaskListItem> onDelete;
 
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminTaskListItem>(
-      title: 'Управление заданиями',
+      title: 'РЈРїСЂР°РІР»РµРЅРёРµ Р·Р°РґР°РЅРёСЏРјРё',
       description:
-          'Планируйте дедлайны, количество попыток и направление перевода.',
-      actionText: 'Создать задание',
-      emptyText: 'Заданий пока нет.',
+          'РџР»Р°РЅРёСЂСѓР№С‚Рµ РґРµРґР»Р°Р№РЅС‹, РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє Рё РЅР°РїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРІРѕРґР°.',
+      actionText: 'РЎРѕР·РґР°С‚СЊ Р·Р°РґР°РЅРёРµ',
+      emptyText: 'Р—Р°РґР°РЅРёР№ РїРѕРєР° РЅРµС‚.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'Задание: ${item.vocabularySetName}',
+        title: 'Р—Р°РґР°РЅРёРµ: ${item.vocabularySetName}',
         subtitle: _taskSubtitle(item),
         status: _taskStatus(item),
+        onView: () => onView(item),
+        onEdit: () => onEdit(item),
+        onDelete: () => onDelete(item),
+      ),
+    );
+  }
+}
+
+class _ReportDialog extends ConsumerStatefulWidget {
+  const _ReportDialog();
+
+  @override
+  ConsumerState<_ReportDialog> createState() => _ReportDialogState();
+}
+
+class _ReportDialogState extends ConsumerState<_ReportDialog> {
+  void _refreshReport() {
+    ref.invalidate(adminReportMetricsProvider);
+  }
+
+  Future<void> _downloadPdf(AdminReportMetrics metrics) async {
+    try {
+      final generatedAt = DateTime.now();
+      final fileName = 'otchet_${_formatPdfFileStamp(generatedAt)}.pdf';
+      final bytes = await AdminReportPdfHelper.build(
+        metrics: metrics,
+        generatedAt: generatedAt,
+      );
+
+      if (kIsWeb) {
+        throw UnsupportedError(
+          'Сохранение PDF на Web-варианте здесь не поддерживается.',
+        );
+      }
+
+      final targetDirectory =
+          await getDownloadsDirectory() ??
+          await getApplicationDocumentsDirectory();
+      final filePath =
+          '${targetDirectory.path}${Platform.pathSeparator}$fileName';
+      final file = File(filePath);
+      await file.writeAsBytes(bytes, flush: true);
+
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('PDF сохранен: $filePath')));
+    } on MissingPluginException {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Плагин печати недоступен. PDF сохранение отключено.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Не удалось создать PDF: $error')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final metricsAsync = ref.watch(adminReportMetricsProvider);
+    final reportMetrics = metricsAsync.maybeWhen(
+      data: (metrics) => metrics,
+      orElse: () => null,
+    );
+    final textTheme = Theme.of(context).textTheme;
+
+    return AlertDialog(
+      scrollable: true,
+      title: const Text('РћС‚С‡РµС‚ РїРѕ С‚РµРєСѓС‰РµР№ Р±Р°Р·Рµ'),
+      content: SizedBox(
+        width: 520,
+        child: metricsAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, _) => Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РѕС‚С‡РµС‚',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('$error'),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _refreshReport,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          data: (AdminReportMetrics metrics) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ReportMetricCard(
+                title:
+                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… СЃР»РѕРІР°СЂРЅС‹С… РЅР°Р±РѕСЂРѕРІ',
+                value: metrics.vocabularySetCount.toString(),
+                icon: Icons.menu_book_outlined,
+                accentColor: Theme.of(context).colorScheme.primary,
+              ),
+              _ReportMetricCard(
+                title:
+                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РЅР°Р·РЅР°С‡РµРЅРЅС‹С… Р·Р°РґР°РЅРёР№',
+                value: metrics.taskCount.toString(),
+                icon: Icons.assignment_outlined,
+                accentColor: Theme.of(context).colorScheme.tertiary,
+              ),
+              _ReportMetricCard(
+                title:
+                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РїРѕР»РЅРµРЅРЅС‹С… Р·Р°РґР°РЅРёР№',
+                value: metrics.completedTaskCount.toString(),
+                icon: Icons.check_circle_outline,
+                accentColor: AppColors.success,
+              ),
+              _ReportMetricCard(
+                title: 'РЎСЂРµРґРЅСЏСЏ С‚РѕС‡РЅРѕСЃС‚СЊ РѕС‚РІРµС‚РѕРІ',
+                value: _formatPercent(metrics.averageAnswerAccuracyPercent),
+                icon: Icons.insights_outlined,
+                accentColor: Theme.of(context).colorScheme.secondary,
+              ),
+              _ReportMetricCard(
+                title:
+                    'РљРѕР»РёС‡РµСЃС‚РІРѕ Р°РєС‚РёРІРЅС‹С… СЃС‚СѓРґРµРЅС‚РѕРІ',
+                value: metrics.activeStudentCount.toString(),
+                icon: Icons.groups_outlined,
+                accentColor: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+        ),
+        OutlinedButton.icon(
+          onPressed: _refreshReport,
+          icon: const Icon(Icons.refresh),
+          label: const Text('РћР±РЅРѕРІРёС‚СЊ'),
+        ),
+        FilledButton.icon(
+          onPressed: reportMetrics == null
+              ? null
+              : () => _downloadPdf(reportMetrics),
+          icon: const Icon(Icons.download_outlined),
+          label: const Text('РЎРєР°С‡Р°С‚СЊ PDF'),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatPdfFileStamp(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  String twoDigits(int value) => value.toString().padLeft(2, '0');
+  return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)}_'
+      '${twoDigits(local.hour)}-${twoDigits(local.minute)}-${twoDigits(local.second)}';
+}
+
+class _ReportMetricCard extends StatelessWidget {
+  const _ReportMetricCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.accentColor,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: accentColor),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VocabularySetDetailsDialog extends StatelessWidget {
+  const _VocabularySetDetailsDialog({required this.details});
+
+  final AdminVocabularySetDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      scrollable: true,
+      title: const Text('Р”РµС‚Р°Р»Рё СЃР»РѕРІР°СЂРЅРѕРіРѕ РЅР°Р±РѕСЂР°'),
+      content: SizedBox(
+        width: 560,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DetailRow(label: 'РўРµРјР°', value: details.themeName),
+            _DetailRow(label: 'CEFR', value: details.cefrLevel),
+            _DetailRow(
+              label: 'РЎРѕР·РґР°РЅ',
+              value: _formatDate(details.createdAt),
+            ),
+            _DetailRow(label: 'РђРІС‚РѕСЂ', value: details.userId),
+            const SizedBox(height: 16),
+            Text(
+              'РЎР»РѕРІР°',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            if (details.words.isEmpty)
+              const Text('РЎР»РѕРІР° РЅРµ РЅР°Р№РґРµРЅС‹.')
+            else
+              ...details.words.map(
+                (word) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(
+                      '${word.russianWord} - ${word.englishTranslation}',
+                    ),
+                    subtitle: Text(
+                      [
+                        if (word.transcription?.isNotEmpty ?? false)
+                          'РўСЂР°РЅСЃРєСЂРёРїС†РёСЏ: ${word.transcription}',
+                        if (word.exampleSentence?.isNotEmpty ?? false)
+                          'РџСЂРёРјРµСЂ: ${word.exampleSentence}',
+                      ].join('\n'),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+        ),
+      ],
+    );
+  }
+}
+
+class _StudyGroupDetailsDialog extends StatelessWidget {
+  const _StudyGroupDetailsDialog({required this.details});
+
+  final AdminStudyGroupDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      scrollable: true,
+      title: const Text('Р”РµС‚Р°Р»Рё СѓС‡РµР±РЅРѕР№ РіСЂСѓРїРїС‹'),
+      content: SizedBox(
+        width: 520,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DetailRow(label: 'РќР°Р·РІР°РЅРёРµ', value: details.name),
+            _DetailRow(
+              label: 'РЎРѕР·РґР°РЅР°',
+              value: _formatDate(details.createdAt),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'РЈС‡Р°СЃС‚РЅРёРєРё',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            if (details.members.isEmpty)
+              const Text('Р’ РіСЂСѓРїРїРµ РїРѕРєР° РЅРµС‚ СЃС‚СѓРґРµРЅС‚РѕРІ.')
+            else
+              ...details.members.map(
+                (member) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.person_outline),
+                  title: Text(member.displayName),
+                  subtitle: Text(member.email),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+        ),
+      ],
+    );
+  }
+}
+
+class _TaskDetailsDialog extends StatelessWidget {
+  const _TaskDetailsDialog({required this.item});
+
+  final AdminTaskListItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Р”РµС‚Р°Р»Рё Р·Р°РґР°РЅРёСЏ'),
+      content: SizedBox(
+        width: 480,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DetailRow(
+              label: 'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+              value: item.vocabularySetName,
+            ),
+            _DetailRow(
+              label: 'Р”Р°С‚Р° РЅР°С‡Р°Р»Р°',
+              value: _formatNullableDate(item.startDate),
+            ),
+            _DetailRow(
+              label: 'Р”РµРґР»Р°Р№РЅ',
+              value: _formatNullableDate(item.deadline),
+            ),
+            _DetailRow(
+              label: 'РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє',
+              value: item.attemptsCount.toString(),
+            ),
+            _DetailRow(
+              label: 'РќР°РїСЂР°РІР»РµРЅРёРµ',
+              value: item.translateToRussian
+                  ? 'РџРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'
+                  : 'РџРµСЂРµРІРѕРґ РЅР° Р°РЅРіР»РёР№СЃРєРёР№',
+            ),
+            _DetailRow(
+              label: 'РџРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°',
+              value: item.availableAfterEnd
+                  ? 'Р”РѕСЃС‚СѓРїРЅРѕ'
+                  : 'РќРµРґРѕСЃС‚СѓРїРЅРѕ',
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+        ),
+      ],
+    );
+  }
+}
+
+class _SetMetadataDialog extends StatefulWidget {
+  const _SetMetadataDialog({required this.item});
+
+  final AdminVocabularySetListItem item;
+
+  @override
+  State<_SetMetadataDialog> createState() => _SetMetadataDialogState();
+}
+
+class _SetMetadataDialogState extends State<_SetMetadataDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _themeController;
+  late final TextEditingController _cefrController;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeController = TextEditingController(text: widget.item.themeName);
+    _cefrController = TextEditingController(text: widget.item.cefrLevel);
+  }
+
+  @override
+  void dispose() {
+    _themeController.dispose();
+    _cefrController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(
+        'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _themeController,
+              decoration: const InputDecoration(
+                labelText: 'РќР°Р·РІР°РЅРёРµ С‚РµРјС‹',
+              ),
+              validator: _requiredValidator,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _cefrController,
+              decoration: const InputDecoration(
+                labelText: 'CEFR СѓСЂРѕРІРµРЅСЊ',
+              ),
+              textCapitalization: TextCapitalization.characters,
+              validator: _cefrLevelValidator,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('РћС‚РјРµРЅР°'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (!_formKey.currentState!.validate()) {
+              return;
+            }
+            Navigator.of(context).pop(
+              _SetMetadataFormData(
+                themeName: _themeController.text.trim(),
+                cefrLevel: _cefrController.text.trim().toUpperCase(),
+              ),
+            );
+          },
+          child: const Text('РЎРѕС…СЂР°РЅРёС‚СЊ'),
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 150,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }
@@ -429,7 +1300,7 @@ class _TabLayout<T> extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh),
-              label: const Text('Обновить'),
+              label: const Text('РћР±РЅРѕРІРёС‚СЊ'),
             ),
           ],
         ),
@@ -452,16 +1323,38 @@ class _TabLayout<T> extends StatelessWidget {
   }
 }
 
+enum _AdminCardAction { view, edit, delete }
+
 class _AdminItemCard extends StatelessWidget {
   const _AdminItemCard({
     required this.title,
     required this.subtitle,
     required this.status,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final String title;
   final String subtitle;
   final String status;
+  final VoidCallback onView;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  void _handleAction(_AdminCardAction action) {
+    switch (action) {
+      case _AdminCardAction.view:
+        onView();
+        break;
+      case _AdminCardAction.edit:
+        onEdit();
+        break;
+      case _AdminCardAction.delete:
+        onDelete();
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -472,11 +1365,36 @@ class _AdminItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                PopupMenuButton<_AdminCardAction>(
+                  tooltip: 'Р”РµР№СЃС‚РІРёСЏ',
+                  onSelected: _handleAction,
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: _AdminCardAction.view,
+                      child: Text('РџСЂРѕСЃРјРѕС‚СЂ'),
+                    ),
+                    PopupMenuItem(
+                      value: _AdminCardAction.edit,
+                      child: Text('Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ'),
+                    ),
+                    PopupMenuItem(
+                      value: _AdminCardAction.delete,
+                      child: Text('РЈРґР°Р»РёС‚СЊ'),
+                    ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(subtitle),
@@ -529,7 +1447,7 @@ class _ErrorState extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Не удалось загрузить данные',
+              'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -537,7 +1455,10 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$error'),
             const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: const Text('Повторить')),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+            ),
           ],
         ),
       ),
@@ -626,11 +1547,11 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
           children: [
             Row(
               children: [
-                Text('Слово ${index + 1}', style: titleStyle),
+                Text('РЎР»РѕРІРѕ ${index + 1}', style: titleStyle),
                 const Spacer(),
                 if (_wordRows.length > 1)
                   IconButton(
-                    tooltip: 'Удалить слово',
+                    tooltip: 'РЈРґР°Р»РёС‚СЊ СЃР»РѕРІРѕ',
                     onPressed: () => _removeWordRow(index),
                     icon: const Icon(Icons.delete_outline),
                   ),
@@ -639,7 +1560,9 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             const SizedBox(height: 12),
             TextFormField(
               controller: controllers.russianController,
-              decoration: const InputDecoration(labelText: 'Русское слово'),
+              decoration: const InputDecoration(
+                labelText: 'Р СѓСЃСЃРєРѕРµ СЃР»РѕРІРѕ',
+              ),
               textInputAction: TextInputAction.next,
               validator: _requiredValidator,
             ),
@@ -647,7 +1570,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.englishController,
               decoration: const InputDecoration(
-                labelText: 'Английский перевод',
+                labelText: 'РђРЅРіР»РёР№СЃРєРёР№ РїРµСЂРµРІРѕРґ',
               ),
               textInputAction: TextInputAction.next,
               validator: _requiredValidator,
@@ -656,7 +1579,8 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.transcriptionController,
               decoration: const InputDecoration(
-                labelText: 'Транскрипция (необязательно)',
+                labelText:
+                    'РўСЂР°РЅСЃРєСЂРёРїС†РёСЏ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)',
               ),
               textInputAction: TextInputAction.next,
             ),
@@ -664,7 +1588,8 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.exampleController,
               decoration: const InputDecoration(
-                labelText: 'Пример предложения (необязательно)',
+                labelText:
+                    'РџСЂРёРјРµСЂ РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)',
               ),
               maxLines: 2,
             ),
@@ -678,7 +1603,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Новый словарный набор'),
+      title: const Text('РќРѕРІС‹Р№ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ'),
       content: SizedBox(
         width: double.maxFinite,
         child: Form(
@@ -688,14 +1613,18 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             children: [
               TextFormField(
                 controller: _themeController,
-                decoration: const InputDecoration(labelText: 'Название темы'),
+                decoration: const InputDecoration(
+                  labelText: 'РќР°Р·РІР°РЅРёРµ С‚РµРјС‹',
+                ),
                 textInputAction: TextInputAction.next,
                 validator: _requiredValidator,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cefrController,
-                decoration: const InputDecoration(labelText: 'CEFR уровень'),
+                decoration: const InputDecoration(
+                  labelText: 'CEFR СѓСЂРѕРІРµРЅСЊ',
+                ),
                 textCapitalization: TextCapitalization.characters,
                 validator: _cefrLevelValidator,
               ),
@@ -703,7 +1632,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Слова набора',
+                  'РЎР»РѕРІР° РЅР°Р±РѕСЂР°',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -718,7 +1647,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
                 child: TextButton.icon(
                   onPressed: _addWordRow,
                   icon: const Icon(Icons.add),
-                  label: const Text('Добавить слово'),
+                  label: const Text('Р”РѕР±Р°РІРёС‚СЊ СЃР»РѕРІРѕ'),
                 ),
               ),
             ],
@@ -728,7 +1657,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('РћС‚РјРµРЅР°'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -737,7 +1666,11 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             }
             if (_wordRows.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Добавьте хотя бы одно слово.')),
+                const SnackBar(
+                  content: Text(
+                    'Р”РѕР±Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ СЃР»РѕРІРѕ.',
+                  ),
+                ),
               );
               return;
             }
@@ -750,23 +1683,50 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               ),
             );
           },
-          child: const Text('Создать'),
+          child: const Text('РЎРѕР·РґР°С‚СЊ'),
         ),
       ],
     );
   }
 }
 
-class _CreateGroupDialog extends StatefulWidget {
-  const _CreateGroupDialog();
+class _StudyGroupFormDialog extends StatefulWidget {
+  const _StudyGroupFormDialog({
+    required this.title,
+    required this.actionLabel,
+    required this.students,
+    this.initialName = '',
+    this.initialGroupId,
+  });
+
+  final String title;
+  final String actionLabel;
+  final List<AdminStudentListItem> students;
+  final String initialName;
+  final int? initialGroupId;
 
   @override
-  State<_CreateGroupDialog> createState() => _CreateGroupDialogState();
+  State<_StudyGroupFormDialog> createState() => _StudyGroupFormDialogState();
 }
 
-class _CreateGroupDialogState extends State<_CreateGroupDialog> {
+class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  late final TextEditingController _nameController;
+  final Set<String> _selectedStudentIds = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    final initialGroupId = widget.initialGroupId;
+    if (initialGroupId != null) {
+      _selectedStudentIds.addAll(
+        widget.students
+            .where((student) => student.studyGroupId == initialGroupId)
+            .map((student) => student.id),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -774,56 +1734,154 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
     super.dispose();
   }
 
+  void _toggleStudentSelection(String studentId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedStudentIds.add(studentId);
+      } else {
+        _selectedStudentIds.remove(studentId);
+      }
+    });
+  }
+
+  Widget _buildStudentTile(AdminStudentListItem student) {
+    final subtitle = student.subtitle;
+
+    return CheckboxListTile(
+      value: _selectedStudentIds.contains(student.id),
+      onChanged: (value) {
+        _toggleStudentSelection(student.id, value ?? false);
+      },
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: EdgeInsets.zero,
+      title: Text(student.displayName),
+      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+    );
+  }
+
+  Widget _buildStudentList() {
+    if (widget.students.isEmpty) {
+      return const Center(
+        child: Text('РЎРїРёСЃРѕРє СЃС‚СѓРґРµРЅС‚РѕРІ РїРѕРєР° РїСѓСЃС‚.'),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: widget.students.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) =>
+          _buildStudentTile(widget.students[index]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Новая учебная группа'),
-      content: Form(
-        key: _formKey,
-        child: TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(labelText: 'Название группы'),
-          validator: _requiredValidator,
+      scrollable: true,
+      title: Text(widget.title),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'РќР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹',
+                ),
+                validator: _requiredValidator,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Р’С‹Р±РµСЂРёС‚Рµ СЃС‚СѓРґРµРЅС‚РѕРІ',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Р•СЃР»Рё СЃС‚СѓРґРµРЅС‚ СѓР¶Рµ СЃРѕСЃС‚РѕРёС‚ РІ РіСЂСѓРїРїРµ, РІС‹Р±РѕСЂ РїРµСЂРµРЅРµСЃРµС‚ РµРіРѕ РІ СЌС‚Сѓ РіСЂСѓРїРїСѓ.',
+              ),
+              const SizedBox(height: 8),
+              SizedBox(height: 280, child: _buildStudentList()),
+            ],
+          ),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('РћС‚РјРµРЅР°'),
         ),
         ElevatedButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) {
               return;
             }
-            Navigator.of(
-              context,
-            ).pop(_CreateGroupData(name: _nameController.text.trim()));
+            Navigator.of(context).pop(
+              _GroupFormData(
+                name: _nameController.text.trim(),
+                studentIds: _selectedStudentIds.toList(growable: false),
+              ),
+            );
           },
-          child: const Text('Создать'),
+          child: Text(widget.actionLabel),
         ),
       ],
     );
   }
 }
 
-class _CreateTaskDialog extends StatefulWidget {
-  const _CreateTaskDialog({required this.sets});
+class _TaskFormDialog extends StatefulWidget {
+  const _TaskFormDialog({
+    required this.title,
+    required this.actionLabel,
+    required this.sets,
+    this.initialItem,
+  });
 
+  final String title;
+  final String actionLabel;
   final List<AdminVocabularySetListItem> sets;
+  final AdminTaskListItem? initialItem;
 
   @override
-  State<_CreateTaskDialog> createState() => _CreateTaskDialogState();
+  State<_TaskFormDialog> createState() => _TaskFormDialogState();
 }
 
-class _CreateTaskDialogState extends State<_CreateTaskDialog> {
+class _TaskFormDialogState extends State<_TaskFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _deadlineController = TextEditingController();
-  final _startDateController = TextEditingController();
-  final _attemptsController = TextEditingController(text: '1');
-  late int _selectedSetId = widget.sets.first.id;
-  bool _translateToRussian = true;
-  bool _availableAfterEnd = false;
+  late final TextEditingController _deadlineController;
+  late final TextEditingController _startDateController;
+  late final TextEditingController _attemptsController;
+  late int _selectedSetId;
+  late bool _translateToRussian;
+  late bool _availableAfterEnd;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialItem = widget.initialItem;
+    final initialSetId = initialItem?.vocabularySetId;
+    _selectedSetId =
+        initialSetId != null && widget.sets.any((set) => set.id == initialSetId)
+        ? initialSetId
+        : widget.sets.first.id;
+    _deadlineController = TextEditingController(
+      text: _formatDateForInput(initialItem?.deadline),
+    );
+    _startDateController = TextEditingController(
+      text: _formatDateForInput(initialItem?.startDate),
+    );
+    _attemptsController = TextEditingController(
+      text: (initialItem?.attemptsCount ?? 1).toString(),
+    );
+    _translateToRussian = initialItem?.translateToRussian ?? true;
+    _availableAfterEnd = initialItem?.availableAfterEnd ?? false;
+  }
 
   @override
   void dispose() {
@@ -836,7 +1894,7 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Новое задание'),
+      title: Text(widget.title),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -845,7 +1903,9 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
             children: [
               DropdownButtonFormField<int>(
                 initialValue: _selectedSetId,
-                decoration: const InputDecoration(labelText: 'Словарный набор'),
+                decoration: const InputDecoration(
+                  labelText: 'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+                ),
                 items: widget.sets
                     .map(
                       (set) => DropdownMenuItem<int>(
@@ -866,16 +1926,16 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
               TextFormField(
                 controller: _startDateController,
                 decoration: const InputDecoration(
-                  labelText: 'Дата начала',
-                  hintText: 'ГГГГ-ММ-ДД',
+                  labelText: 'Р”Р°С‚Р° РЅР°С‡Р°Р»Р°',
+                  hintText: 'Р“Р“Р“Р“-РњРњ-Р”Р”',
                 ),
                 validator: _optionalDateValidator,
               ),
               TextFormField(
                 controller: _deadlineController,
                 decoration: const InputDecoration(
-                  labelText: 'Дедлайн',
-                  hintText: 'ГГГГ-ММ-ДД',
+                  labelText: 'Р”РµРґР»Р°Р№РЅ',
+                  hintText: 'Р“Р“Р“Р“-РњРњ-Р”Р”',
                 ),
                 validator: (value) =>
                     _deadlineValidator(value, _startDateController.text),
@@ -883,14 +1943,14 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
               TextFormField(
                 controller: _attemptsController,
                 decoration: const InputDecoration(
-                  labelText: 'Количество попыток',
+                  labelText: 'РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє',
                 ),
                 keyboardType: TextInputType.number,
                 validator: _attemptsValidator,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Перевод на русский'),
+                title: const Text('РџРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'),
                 value: _translateToRussian,
                 onChanged: (value) {
                   setState(() {
@@ -900,7 +1960,9 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Доступно после дедлайна'),
+                title: const Text(
+                  'Р”РѕСЃС‚СѓРїРЅРѕ РїРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°',
+                ),
                 value: _availableAfterEnd,
                 onChanged: (value) {
                   setState(() {
@@ -915,7 +1977,7 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('РћС‚РјРµРЅР°'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -923,7 +1985,7 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
               return;
             }
             Navigator.of(context).pop(
-              _CreateTaskData(
+              _TaskFormData(
                 vocabularySetId: _selectedSetId,
                 deadline: _parseDate(_deadlineController.text),
                 startDate: _parseDate(_startDateController.text),
@@ -933,7 +1995,7 @@ class _CreateTaskDialogState extends State<_CreateTaskDialog> {
               ),
             );
           },
-          child: const Text('Создать'),
+          child: Text(widget.actionLabel),
         ),
       ],
     );
@@ -976,14 +2038,25 @@ class _CreateSetData {
   final List<AdminVocabularyWordInput> words;
 }
 
-class _CreateGroupData {
-  const _CreateGroupData({required this.name});
+class _SetMetadataFormData {
+  const _SetMetadataFormData({
+    required this.themeName,
+    required this.cefrLevel,
+  });
 
-  final String name;
+  final String themeName;
+  final String cefrLevel;
 }
 
-class _CreateTaskData {
-  const _CreateTaskData({
+class _GroupFormData {
+  const _GroupFormData({required this.name, required this.studentIds});
+
+  final String name;
+  final List<String> studentIds;
+}
+
+class _TaskFormData {
+  const _TaskFormData({
     required this.vocabularySetId,
     required this.deadline,
     required this.startDate,
@@ -1002,7 +2075,7 @@ class _CreateTaskData {
 
 String? _requiredValidator(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'Заполните поле';
+    return 'Р—Р°РїРѕР»РЅРёС‚Рµ РїРѕР»Рµ';
   }
   return null;
 }
@@ -1016,7 +2089,7 @@ String? _cefrLevelValidator(String? value) {
   final level = value!.trim().toUpperCase();
   const allowedLevels = {'A1', 'A2', 'B1', 'B2', 'C1', 'C2'};
   if (!allowedLevels.contains(level)) {
-    return 'Введите уровень A1, A2, B1, B2, C1 или C2';
+    return 'Р’РІРµРґРёС‚Рµ СѓСЂРѕРІРµРЅСЊ A1, A2, B1, B2, C1 РёР»Рё C2';
   }
   return null;
 }
@@ -1027,7 +2100,7 @@ String? _optionalDateValidator(String? value) {
     return null;
   }
   if (_parseDate(text) == null) {
-    return 'Введите дату в формате ГГГГ-ММ-ДД';
+    return 'Р’РІРµРґРёС‚Рµ РґР°С‚Сѓ РІ С„РѕСЂРјР°С‚Рµ Р“Р“Р“Р“-РњРњ-Р”Р”';
   }
   return null;
 }
@@ -1041,7 +2114,7 @@ String? _deadlineValidator(String? value, String startDateValue) {
   final startDate = _parseDate(startDateValue);
   final deadline = _parseDate(value ?? '');
   if (startDate != null && deadline != null && deadline.isBefore(startDate)) {
-    return 'Дедлайн не может быть раньше даты начала';
+    return 'Р”РµРґР»Р°Р№РЅ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ СЂР°РЅСЊС€Рµ РґР°С‚С‹ РЅР°С‡Р°Р»Р°';
   }
   return null;
 }
@@ -1049,7 +2122,7 @@ String? _deadlineValidator(String? value, String startDateValue) {
 String? _attemptsValidator(String? value) {
   final attempts = int.tryParse(value?.trim() ?? '');
   if (attempts == null || attempts < 1) {
-    return 'Введите число больше 0';
+    return 'Р’РІРµРґРёС‚Рµ С‡РёСЃР»Рѕ Р±РѕР»СЊС€Рµ 0';
   }
   return null;
 }
@@ -1078,35 +2151,58 @@ DateTime? _parseDate(String value) {
   return parsed;
 }
 
-String _taskSubtitle(AdminTaskListItem item) {
-  final direction = item.translateToRussian ? 'на русский' : 'на английский';
-  final startDate = item.startDate == null
-      ? 'без даты начала'
-      : 'старт: ${_formatDate(item.startDate!)}';
-  final deadline = item.deadline == null
-      ? 'без дедлайна'
-      : 'дедлайн: ${_formatDate(item.deadline!)}';
+String _formatNullableDate(DateTime? date) {
+  if (date == null) {
+    return 'РќРµ Р·Р°РґР°РЅРѕ';
+  }
+  return _formatDate(date);
+}
 
-  return '$startDate · $deadline · попыток: ${item.attemptsCount} · перевод $direction';
+String _formatDateForInput(DateTime? date) {
+  if (date == null) {
+    return '';
+  }
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '${date.year}-$month-$day';
+}
+
+String _taskSubtitle(AdminTaskListItem item) {
+  final direction = item.translateToRussian
+      ? 'РЅР° СЂСѓСЃСЃРєРёР№'
+      : 'РЅР° Р°РЅРіР»РёР№СЃРєРёР№';
+  final startDate = item.startDate == null
+      ? 'Р±РµР· РґР°С‚С‹ РЅР°С‡Р°Р»Р°'
+      : 'СЃС‚Р°СЂС‚: ${_formatDate(item.startDate!)}';
+  final deadline = item.deadline == null
+      ? 'Р±РµР· РґРµРґР»Р°Р№РЅР°'
+      : 'РґРµРґР»Р°Р№РЅ: ${_formatDate(item.deadline!)}';
+
+  return '$startDate В· $deadline В· РїРѕРїС‹С‚РѕРє: ${item.attemptsCount} В· РїРµСЂРµРІРѕРґ $direction';
 }
 
 String _taskStatus(AdminTaskListItem item) {
   final now = DateTime.now();
   if (item.deadline != null && item.deadline!.isBefore(now)) {
     return item.availableAfterEnd
-        ? 'Доступно после дедлайна'
-        : 'Дедлайн прошёл';
+        ? 'Р”РѕСЃС‚СѓРїРЅРѕ РїРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°'
+        : 'Р”РµРґР»Р°Р№РЅ РїСЂРѕС€С‘Р»';
   }
   if (item.startDate != null && item.startDate!.isAfter(now)) {
-    return 'Запланировано';
+    return 'Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅРѕ';
   }
-  return 'Активно';
+  return 'РђРєС‚РёРІРЅРѕ';
 }
 
 String _formatDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
   final month = date.month.toString().padLeft(2, '0');
   return '$day.$month.${date.year}';
+}
+
+String _formatPercent(double value) {
+  final fixed = value.toStringAsFixed(1).replaceAll('.', ',');
+  return '$fixed %';
 }
 
 String? _textOrNull(String value) {

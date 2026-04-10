@@ -112,12 +112,16 @@ class FakeAchievementsRepository implements AchievementsRepositoryBase {
   final Future<List<AchievementItem>> _future;
 
   @override
-  Future<List<AchievementItem>> fetchAchievements() async {
+  Stream<List<AchievementItem>> watchAchievements() {
     if (_mode == _FakeMode.error) {
-      throw Exception('boom');
+      return Stream<List<AchievementItem>>.error(Exception('boom'));
     }
 
-    return _future;
+    if (_mode == _FakeMode.empty) {
+      return Stream<List<AchievementItem>>.value(const <AchievementItem>[]);
+    }
+
+    return Stream<List<AchievementItem>>.fromFuture(_future);
   }
 }
 

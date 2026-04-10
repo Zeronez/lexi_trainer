@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
 import 'package:lexi_trainer/core/auth/sign_out_button.dart';
+import 'package:lexi_trainer/core/auth/user_role.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
 import 'package:lexi_trainer/features/learning/data/models/learning_assignment.dart';
 import 'package:lexi_trainer/features/learning/data/repositories/learning_repository.dart';
@@ -36,7 +38,9 @@ class _LearningAssignmentsScreenState
 
       if (words.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('В этом наборе пока нет слов.')),
+          const SnackBar(
+            content: Text('Р’ СЌС‚РѕРј РЅР°Р±РѕСЂРµ РїРѕРєР° РЅРµС‚ СЃР»РѕРІ.'),
+          ),
         );
         return;
       }
@@ -75,7 +79,11 @@ class _LearningAssignmentsScreenState
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Не удалось открыть задание: $error')),
+        SnackBar(
+          content: Text(
+            'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ Р·Р°РґР°РЅРёРµ: $error',
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -86,6 +94,26 @@ class _LearningAssignmentsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final roleAsync = ref.watch(currentUserRoleProvider);
+
+    return roleAsync.when(
+      data: (role) {
+        if (role.canOpenAdminSection) {
+          return const _LearningAccessDeniedScreen();
+        }
+
+        return _buildAssignmentsScaffold();
+      },
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, _) => _RoleLoadErrorScreen(
+        error: error,
+        onRetry: () => ref.invalidate(currentUserRoleProvider),
+      ),
+    );
+  }
+
+  Widget _buildAssignmentsScaffold() {
     final assignments = ref.watch(learningAssignmentsProvider);
 
     return Scaffold(
@@ -123,6 +151,106 @@ class _LearningAssignmentsScreenState
           error: (error, _) => _ErrorState(
             error: error,
             onRetry: () => ref.invalidate(learningAssignmentsProvider),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LearningAccessDeniedScreen extends StatelessWidget {
+  const _LearningAccessDeniedScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Доступ к заданиям')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 56,
+                      color: AppColors.accent,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Этот раздел доступен только студентам',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Учителя и администраторы не проходят задания и не получают достижения. Для управления курсом используйте админ-панель.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      child: const Text('Вернуться назад'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleLoadErrorScreen extends StatelessWidget {
+  const _RoleLoadErrorScreen({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Мои задания')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 56,
+                color: AppColors.accent,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Не удалось определить доступ к разделу',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text('$error', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: onRetry,
+                child: const Text('Повторить'),
+              ),
+            ],
           ),
         ),
       ),
@@ -274,18 +402,21 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.assignment_late_outlined, size: 56),
             const SizedBox(height: 16),
             Text(
-              'Пока нет заданий',
+              'РџРѕРєР° РЅРµС‚ Р·Р°РґР°РЅРёР№',
               style: textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Когда преподаватель назначит набор слов, он появится здесь.',
+              'РљРѕРіРґР° РїСЂРµРїРѕРґР°РІР°С‚РµР»СЊ РЅР°Р·РЅР°С‡РёС‚ РЅР°Р±РѕСЂ СЃР»РѕРІ, РѕРЅ РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRefresh, child: const Text('Обновить')),
+            OutlinedButton(
+              onPressed: onRefresh,
+              child: const Text('РћР±РЅРѕРІРёС‚СЊ'),
+            ),
           ],
         ),
       ),
@@ -312,7 +443,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 56, color: AppColors.accent),
             const SizedBox(height: 16),
             Text(
-              'Не удалось загрузить задания',
+              'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РґР°РЅРёСЏ',
               style: textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
@@ -321,7 +452,10 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$error', textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: onRetry, child: const Text('Повторить')),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+            ),
           ],
         ),
       ),
@@ -353,8 +487,8 @@ class _AssignmentAvailability {
     if (statusName == 'completed') {
       return const _AssignmentAvailability(
         canOpen: false,
-        label: 'Завершено',
-        actionLabel: 'Завершено',
+        label: 'Р—Р°РІРµСЂС€РµРЅРѕ',
+        actionLabel: 'Р—Р°РІРµСЂС€РµРЅРѕ',
         icon: Icons.check_circle_outline,
         color: AppColors.success,
       );
@@ -363,8 +497,8 @@ class _AssignmentAvailability {
     if (assignment.startDate != null && assignment.startDate!.isAfter(now)) {
       return _AssignmentAvailability(
         canOpen: false,
-        label: 'Откроется ${_formatDateTime(assignment.startDate!)}',
-        actionLabel: 'Пока недоступно',
+        label: 'РћС‚РєСЂРѕРµС‚СЃСЏ ${_formatDateTime(assignment.startDate!)}',
+        actionLabel: 'РџРѕРєР° РЅРµРґРѕСЃС‚СѓРїРЅРѕ',
         icon: Icons.schedule_outlined,
         color: AppColors.accent,
       );
@@ -375,8 +509,8 @@ class _AssignmentAvailability {
         !assignment.availableAfterEnd) {
       return const _AssignmentAvailability(
         canOpen: false,
-        label: 'Дедлайн прошёл',
-        actionLabel: 'Недоступно',
+        label: 'Р”РµРґР»Р°Р№РЅ РїСЂРѕС€С‘Р»',
+        actionLabel: 'РќРµРґРѕСЃС‚СѓРїРЅРѕ',
         icon: Icons.event_busy_outlined,
         color: AppColors.accent,
       );
@@ -385,8 +519,8 @@ class _AssignmentAvailability {
     if (statusName == 'in_progress') {
       return const _AssignmentAvailability(
         canOpen: true,
-        label: 'Можно продолжить',
-        actionLabel: 'Продолжить',
+        label: 'РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ',
+        actionLabel: 'РџСЂРѕРґРѕР»Р¶РёС‚СЊ',
         icon: Icons.play_circle_outline,
         color: AppColors.success,
       );
@@ -394,8 +528,8 @@ class _AssignmentAvailability {
 
     return const _AssignmentAvailability(
       canOpen: true,
-      label: 'Доступно',
-      actionLabel: 'Начать',
+      label: 'Р”РѕСЃС‚СѓРїРЅРѕ',
+      actionLabel: 'РќР°С‡Р°С‚СЊ',
       icon: Icons.play_arrow_outlined,
       color: AppColors.success,
     );
@@ -404,25 +538,25 @@ class _AssignmentAvailability {
 
 String _assignmentSubtitle(LearningAssignment assignment) {
   final direction = assignment.translateToRussian
-      ? 'перевод на русский'
-      : 'перевод на английский';
+      ? 'РїРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'
+      : 'РїРµСЂРµРІРѕРґ РЅР° Р°РЅРіР»РёР№СЃРєРёР№';
   final startDate = assignment.startDate == null
-      ? 'без даты начала'
-      : 'старт: ${_formatDateTime(assignment.startDate!)}';
+      ? 'Р±РµР· РґР°С‚С‹ РЅР°С‡Р°Р»Р°'
+      : 'СЃС‚Р°СЂС‚: ${_formatDateTime(assignment.startDate!)}';
   final deadline = assignment.deadline == null
-      ? 'без дедлайна'
-      : 'дедлайн: ${_formatDateTime(assignment.deadline!)}';
+      ? 'Р±РµР· РґРµРґР»Р°Р№РЅР°'
+      : 'РґРµРґР»Р°Р№РЅ: ${_formatDateTime(assignment.deadline!)}';
 
-  return '$startDate · $deadline · попыток: ${assignment.attemptsCount} · $direction';
+  return '$startDate В· $deadline В· РїРѕРїС‹С‚РѕРє: ${assignment.attemptsCount} В· $direction';
 }
 
 String _statusLabel(String? statusName) {
   return switch (statusName) {
-    'assigned' => 'Назначено',
-    'in_progress' => 'В работе',
-    'completed' => 'Завершено',
-    'overdue' => 'Просрочено',
-    _ => 'Не начато',
+    'assigned' => 'РќР°Р·РЅР°С‡РµРЅРѕ',
+    'in_progress' => 'Р’ СЂР°Р±РѕС‚Рµ',
+    'completed' => 'Р—Р°РІРµСЂС€РµРЅРѕ',
+    'overdue' => 'РџСЂРѕСЃСЂРѕС‡РµРЅРѕ',
+    _ => 'РќРµ РЅР°С‡Р°С‚Рѕ',
   };
 }
 
