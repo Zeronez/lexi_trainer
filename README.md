@@ -88,7 +88,21 @@ The script does:
   - run on Windows desktop
   - run with `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`
   - `flutter analyze`
-  - `flutter test`
+- `flutter test`
+
+Alternative launcher (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_lexi_trainer.ps1 -Mode web
+```
+
+Other modes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_lexi_trainer.ps1 -Mode windows
+powershell -ExecutionPolicy Bypass -File .\run_lexi_trainer.ps1 -Mode analyze
+powershell -ExecutionPolicy Bypass -File .\run_lexi_trainer.ps1 -Mode test
+```
 
 ## Seed Data Pack
 

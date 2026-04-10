@@ -1,106 +1,123 @@
 @echo off
-setlocal EnableExtensions EnableDelayedExpansion
+if /I "%~1" NEQ "__runner" (
+  start "Lexi Trainer Launcher" cmd /k "\"%~f0\" __runner"
+  exit /b
+)
+shift
 
+setlocal EnableExtensions EnableDelayedExpansion
 pushd "%~dp0"
 
+set "LOG=%~dp0launcher.log"
+>"%LOG%" echo [%date% %time%] Launcher started
+
 echo ==========================================
-echo   Lexi Trainer - quick run and tests
+echo   Lexi Trainer Launcher
 echo ==========================================
+echo Working dir: %CD%
+echo Log file: %LOG%
 echo.
 
+echo [STEP] Checking Flutter...>>"%LOG%"
 where flutter >nul 2>nul
 if errorlevel 1 (
   echo [ERROR] Flutter not found in PATH.
-  echo Install Flutter and add it to PATH.
+  echo [ERROR] Flutter not found in PATH.>>"%LOG%"
   echo.
-  pause
-  popd
-  exit /b 1
+  echo Install Flutter and add it to PATH.
+  goto :hold
 )
 
-echo [1/2] Running flutter pub get...
-flutter pub get
+echo [STEP] flutter --version>>"%LOG%"
+flutter --version >>"%LOG%" 2>&1
+
+echo [STEP] Running flutter pub get...>>"%LOG%"
+flutter pub get >>"%LOG%" 2>&1
 if errorlevel 1 (
-  echo.
   echo [ERROR] flutter pub get failed.
-  echo Check internet connection and dependencies.
-  echo.
-  pause
-  popd
-  exit /b 1
+  echo [ERROR] flutter pub get failed. See launcher.log>>"%LOG%"
+  goto :hold
 )
 
 :menu
 echo.
-echo Choose mode (default in 10s: Chrome):
-echo   1 - Run in Chrome
-echo   2 - Run for Windows
-echo   3 - Run with Supabase dart-define
+echo Choose action:
+echo   1 - Run app in Chrome
+echo   2 - Run app on Windows
+echo   3 - Run with Supabase vars
 echo   4 - flutter analyze
 echo   5 - flutter test
+echo   6 - Open launcher log
 echo   0 - Exit
-echo.
-choice /c 123450 /t 10 /d 1 /n /m "Enter mode number: "
-set "choice=%errorlevel%"
+set /p M="Enter number and press Enter [default 1]: "
+if "%M%"=="" set "M=1"
 
-if "%choice%"=="6" goto exit
-if "%choice%"=="5" goto run_test
-if "%choice%"=="4" goto analyze
-if "%choice%"=="3" goto run_define
-if "%choice%"=="2" goto run_windows
-if "%choice%"=="1" goto run_web
-goto exit
+if "%M%"=="1" goto run_chrome
+if "%M%"=="2" goto run_windows
+if "%M%"=="3" goto run_define
+if "%M%"=="4" goto run_analyze
+if "%M%"=="5" goto run_test
+if "%M%"=="6" goto open_log
+if "%M%"=="0" goto done
 
-:run_web
-echo.
+echo [WARN] Unknown option: %M%
+goto menu
+
+:run_chrome
 echo [RUN] flutter run -d chrome
+ echo [RUN] flutter run -d chrome>>"%LOG%"
 flutter run -d chrome
-if errorlevel 1 (
-  echo.
-  echo [ERROR] Failed to run in Chrome.
-)
+set "RC=%errorlevel%"
+echo [EXIT] code %RC%>>"%LOG%"
 goto menu
 
 :run_windows
-echo.
 echo [RUN] flutter run -d windows
+ echo [RUN] flutter run -d windows>>"%LOG%"
 flutter run -d windows
-if errorlevel 1 (
-  echo.
-  echo [ERROR] Failed to run Windows app.
-  echo Try: flutter config --enable-windows-desktop
-)
+set "RC=%errorlevel%"
+echo [EXIT] code %RC%>>"%LOG%"
 goto menu
 
 :run_define
-echo.
-set /p SUPABASE_URL=Enter SUPABASE_URL: 
-set /p SUPABASE_PUBLISHABLE_KEY=Enter SUPABASE_PUBLISHABLE_KEY: 
-echo.
-echo [RUN] flutter run with Supabase dart-define
+set /p SUPABASE_URL=SUPABASE_URL: 
+set /p SUPABASE_PUBLISHABLE_KEY=SUPABASE_PUBLISHABLE_KEY: 
+echo [RUN] flutter run with dart-define
+ echo [RUN] flutter run with dart-define>>"%LOG%"
 flutter run --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_PUBLISHABLE_KEY=%SUPABASE_PUBLISHABLE_KEY%
-if errorlevel 1 (
-  echo.
-  echo [ERROR] Run with dart-define failed.
-)
+set "RC=%errorlevel%"
+echo [EXIT] code %RC%>>"%LOG%"
 goto menu
 
-:analyze
-echo.
-echo [CHECK] flutter analyze
+:run_analyze
+echo [RUN] flutter analyze
+ echo [RUN] flutter analyze>>"%LOG%"
 flutter analyze
+set "RC=%errorlevel%"
+echo [EXIT] code %RC%>>"%LOG%"
 goto menu
 
 :run_test
-echo.
-echo [CHECK] flutter test
+echo [RUN] flutter test
+ echo [RUN] flutter test>>"%LOG%"
 flutter test
+set "RC=%errorlevel%"
+echo [EXIT] code %RC%>>"%LOG%"
 goto menu
 
-:exit
+:open_log
+start "Launcher Log" notepad "%LOG%"
+goto menu
+
+:hold
+echo.
+echo Press any key to continue...
+pause >nul
+goto menu
+
+:done
 echo.
 echo Done.
-echo.
-pause
 popd
 endlocal
+exit /b 0
