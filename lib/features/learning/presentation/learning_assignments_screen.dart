@@ -38,9 +38,7 @@ class _LearningAssignmentsScreenState
 
       if (words.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('В этом наборе пока нет слов.'),
-          ),
+          const SnackBar(content: Text('В этом наборе пока нет слов.')),
         );
         return;
       }
@@ -79,11 +77,7 @@ class _LearningAssignmentsScreenState
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Не удалось открыть задание: $error',
-          ),
-        ),
+        SnackBar(content: Text('Не удалось открыть задание: $error')),
       );
     } finally {
       if (mounted) {
@@ -413,10 +407,7 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: onRefresh,
-              child: const Text('Обновить'),
-            ),
+            OutlinedButton(onPressed: onRefresh, child: const Text('Обновить')),
           ],
         ),
       ),
@@ -452,10 +443,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$error', textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('Повторить'),
-            ),
+            ElevatedButton(onPressed: onRetry, child: const Text('Повторить')),
           ],
         ),
       ),
