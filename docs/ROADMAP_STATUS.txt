@@ -111,19 +111,20 @@ Current sprint (this turn)
 [x] DevOps-agent: add release rollback/recovery runbook with UAT P0/P1 gate
 [x] Backend-agent: add Supabase release operations runbook (pre-checks, rollback, smoke SQL)
 [x] Conductor: add release freeze criteria and sign-off document
-[ ] Git-agent: commit + push Sprint E milestone to origin/main
+[x] Git-agent: commit + push Sprint E milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- d28fa68
+- 861e214
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
 - Sprint D migration must be applied in Supabase project before production run.
 - Release Readiness workflow must complete green on main for final candidate approval.
+
 
 
 

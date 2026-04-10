@@ -78,7 +78,7 @@ Owner split:
 [x] DevOps-agent: runbook for rollback/recovery
 [x] QA-agent: UAT checklist and pre-release gate
 [x] Conductor: freeze criteria and release sign-off doc
-[ ] Git-agent: push Sprint E milestone
+[x] Git-agent: push Sprint E milestone
 Acceptance:
 [x] Reproducible release process documented
 [ ] UAT checklist completed with no open P0/P1 issues
