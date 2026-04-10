@@ -1,30 +1,29 @@
-﻿@echo off
+@echo off
 setlocal EnableExtensions EnableDelayedExpansion
-chcp 65001 >nul
 
 pushd "%~dp0"
 
 echo ==========================================
-echo   Lexi Trainer - быстрый запуск и тесты
+echo   Lexi Trainer - quick run and tests
 echo ==========================================
 echo.
 
 where flutter >nul 2>nul
 if errorlevel 1 (
-  echo [ОШИБКА] Flutter не найден в PATH.
-  echo Проверьте установку Flutter и переменную PATH.
+  echo [ERROR] Flutter not found in PATH.
+  echo Install Flutter and add it to PATH.
   echo.
   pause
   popd
   exit /b 1
 )
 
-echo [1/2] Выполняю flutter pub get...
+echo [1/2] Running flutter pub get...
 flutter pub get
 if errorlevel 1 (
   echo.
-  echo [ОШИБКА] flutter pub get завершился с ошибкой.
-  echo Проверьте интернет/зависимости и попробуйте снова.
+  echo [ERROR] flutter pub get failed.
+  echo Check internet connection and dependencies.
   echo.
   pause
   popd
@@ -33,15 +32,15 @@ if errorlevel 1 (
 
 :menu
 echo.
-echo Выберите режим (через 10 сек по умолчанию запустится Chrome):
-echo   1 - Запуск в Chrome
-echo   2 - Запуск для Windows
-echo   3 - Запуск с Supabase dart-define
+echo Choose mode (default in 10s: Chrome):
+echo   1 - Run in Chrome
+echo   2 - Run for Windows
+echo   3 - Run with Supabase dart-define
 echo   4 - flutter analyze
 echo   5 - flutter test
-echo   0 - Выход
+echo   0 - Exit
 echo.
-choice /c 123450 /t 10 /d 1 /n /m "Введите номер режима: "
+choice /c 123450 /t 10 /d 1 /n /m "Enter mode number: "
 set "choice=%errorlevel%"
 
 if "%choice%"=="6" goto exit
@@ -54,54 +53,53 @@ goto exit
 
 :run_web
 echo.
-echo [ЗАПУСК] flutter run -d chrome
+echo [RUN] flutter run -d chrome
 flutter run -d chrome
 if errorlevel 1 (
   echo.
-  echo [ОШИБКА] Не удалось запустить в Chrome.
-  echo Убедитесь, что Chrome установлен и flutter doctor не показывает критичных ошибок.
+  echo [ERROR] Failed to run in Chrome.
 )
 goto menu
 
 :run_windows
 echo.
-echo [ЗАПУСК] flutter run -d windows
+echo [RUN] flutter run -d windows
 flutter run -d windows
 if errorlevel 1 (
   echo.
-  echo [ОШИБКА] Не удалось запустить Windows-версию.
-  echo Проверьте, что включена desktop-поддержка: flutter config --enable-windows-desktop
+  echo [ERROR] Failed to run Windows app.
+  echo Try: flutter config --enable-windows-desktop
 )
 goto menu
 
 :run_define
 echo.
-set /p SUPABASE_URL=Введите SUPABASE_URL: 
-set /p SUPABASE_PUBLISHABLE_KEY=Введите SUPABASE_PUBLISHABLE_KEY: 
+set /p SUPABASE_URL=Enter SUPABASE_URL: 
+set /p SUPABASE_PUBLISHABLE_KEY=Enter SUPABASE_PUBLISHABLE_KEY: 
 echo.
-echo [ЗАПУСК] flutter run с dart-define для Supabase
+echo [RUN] flutter run with Supabase dart-define
 flutter run --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_PUBLISHABLE_KEY=%SUPABASE_PUBLISHABLE_KEY%
 if errorlevel 1 (
   echo.
-  echo [ОШИБКА] Запуск с dart-define завершился ошибкой.
+  echo [ERROR] Run with dart-define failed.
 )
 goto menu
 
 :analyze
 echo.
-echo [ПРОВЕРКА] flutter analyze
+echo [CHECK] flutter analyze
 flutter analyze
 goto menu
 
 :run_test
 echo.
-echo [ПРОВЕРКА] flutter test
+echo [CHECK] flutter test
 flutter test
 goto menu
 
 :exit
 echo.
-echo Завершение работы.
+echo Done.
 echo.
 pause
 popd
