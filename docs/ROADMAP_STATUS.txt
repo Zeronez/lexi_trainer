@@ -126,10 +126,11 @@ Handoff protocol for next sessions
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 7a881f4
+- 112241f
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
+
 
 
 
