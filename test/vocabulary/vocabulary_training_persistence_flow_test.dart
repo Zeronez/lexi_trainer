@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexi_trainer/core/theme/app_theme.dart';
 import 'package:lexi_trainer/features/vocabulary/presentation/vocabulary_training_screen.dart';
-import 'package:lexi_trainer/test/support/mocks/test_mocks.dart';
+import '../support/mocks/test_mocks.dart';
 
 void main() {
   group('Vocabulary training persistence flow', () {

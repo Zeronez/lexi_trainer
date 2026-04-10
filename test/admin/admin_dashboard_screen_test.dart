@@ -12,7 +12,7 @@ void main() {
       ProviderScope(
         overrides: [
           adminVocabularySetsProvider.overrideWith(
-            (ref) async => const [
+            (ref) async => [
               AdminVocabularySetListItem(
                 id: 1,
                 themeName: 'Travel Basics',
@@ -23,7 +23,7 @@ void main() {
             ],
           ),
           adminStudyGroupsProvider.overrideWith(
-            (ref) async => const [
+            (ref) async => [
               AdminStudyGroupListItem(
                 id: 1,
                 name: 'ENG-101',
@@ -32,7 +32,7 @@ void main() {
             ],
           ),
           adminTasksProvider.overrideWith(
-            (ref) async => const [
+            (ref) async => [
               AdminTaskListItem(
                 id: 1,
                 deadline: null,
