@@ -39,11 +39,23 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
   final _answerController = TextEditingController();
 
   static const List<TrainingWordInput> _devFallbackWords = [
-    TrainingWordInput(russian: 'яблоко', english: 'apple'),
-    TrainingWordInput(russian: 'книга', english: 'book'),
-    TrainingWordInput(russian: 'вода', english: 'water'),
-    TrainingWordInput(russian: 'солнце', english: 'sun'),
-    TrainingWordInput(russian: 'школа', english: 'school'),
+    TrainingWordInput(
+      russian: '\u044f\u0431\u043b\u043e\u043a\u043e',
+      english: 'apple',
+    ),
+    TrainingWordInput(
+      russian: '\u043a\u043d\u0438\u0433\u0430',
+      english: 'book',
+    ),
+    TrainingWordInput(russian: '\u0432\u043e\u0434\u0430', english: 'water'),
+    TrainingWordInput(
+      russian: '\u0441\u043e\u043b\u043d\u0446\u0435',
+      english: 'sun',
+    ),
+    TrainingWordInput(
+      russian: '\u0448\u043a\u043e\u043b\u0430',
+      english: 'school',
+    ),
   ];
 
   late final List<TrainingWordInput> _words;
@@ -64,8 +76,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
       widget.learningRepository != null &&
       widget.taskId != null &&
       widget.taskExecutionId != null;
-  String get _targetLanguage =>
-      widget.translateToRussian ? 'русский' : 'английский';
+  String get _targetLanguage => widget.translateToRussian
+      ? '\u0440\u0443\u0441\u0441\u043a\u0438\u0439'
+      : '\u0430\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u0438\u0439';
 
   @override
   void initState() {
@@ -88,7 +101,8 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     final answer = _answerController.text.trim();
     if (answer.isEmpty) {
       setState(() {
-        _feedback = 'Введите перевод перед проверкой.';
+        _feedback =
+            '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043f\u0435\u0440\u0435\u0432\u043e\u0434 \u043f\u0435\u0440\u0435\u0434 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u043e\u0439.';
       });
       return;
     }
@@ -100,10 +114,10 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
       _checked = true;
       if (isCorrect) {
         _correctAnswers += 1;
-        _feedback = 'Верно';
+        _feedback = '\u0412\u0435\u0440\u043d\u043e';
       } else {
         _feedback =
-            'Неверно. Правильный ответ: ${_expectedAnswer(_words[_index])}';
+            '\u041d\u0435\u0432\u0435\u0440\u043d\u043e. \u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: ${_expectedAnswer(_words[_index])}';
       }
     });
 
@@ -152,7 +166,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     }
 
     if (wordId == null) {
-      _showPersistenceError('Не удалось сохранить ответ: у слова нет id.');
+      _showPersistenceError(
+        '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043e\u0442\u0432\u0435\u0442: \u0443 \u0441\u043b\u043e\u0432\u0430 \u043d\u0435\u0442 id.',
+      );
       return;
     }
 
@@ -174,7 +190,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
         endedAt: answeredAt,
       );
     } catch (error) {
-      _showPersistenceError('Не удалось сохранить ответ: $error');
+      _showPersistenceError(
+        '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043e\u0442\u0432\u0435\u0442: $error',
+      );
     }
   }
 
@@ -228,7 +246,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     try {
       await repository.completeTaskExecution(taskExecutionId: taskExecutionId);
     } catch (error) {
-      _showPersistenceError('Не удалось завершить задание: $error');
+      _showPersistenceError(
+        '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u043d\u0438\u0435: $error',
+      );
     } finally {
       if (mounted) {
         setState(() => _isCompletingSession = false);
@@ -259,12 +279,16 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
     final textTheme = Theme.of(context).textTheme;
     final progress = _index / _words.length;
     final nextButtonLabel = _index == _words.length - 1
-        ? 'Завершить'
-        : 'Следующее слово';
+        ? '\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c'
+        : '\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u0435 \u0441\u043b\u043e\u0432\u043e';
     final isBusy = _isSavingAnswer || _isCompletingSession;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Тренировка слов')),
+      appBar: AppBar(
+        title: const Text(
+          '\u0422\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0430 \u0441\u043b\u043e\u0432',
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -277,7 +301,7 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Задание: переведите слово на $_targetLanguage',
+                      '\u0417\u0430\u0434\u0430\u043d\u0438\u0435: \u043f\u0435\u0440\u0435\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043b\u043e\u0432\u043e \u043d\u0430 $_targetLanguage',
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -291,7 +315,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text('Слово ${_index + 1} из ${_words.length}'),
+                    Text(
+                      '\u0421\u043b\u043e\u0432\u043e ${_index + 1} \u0438\u0437 ${_words.length}',
+                    ),
                     const SizedBox(height: 24),
                     Card(
                       child: Padding(
@@ -310,7 +336,8 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                               controller: _answerController,
                               enabled: !_checked,
                               decoration: const InputDecoration(
-                                labelText: 'Ваш ответ',
+                                labelText:
+                                    '\u0412\u0430\u0448 \u043e\u0442\u0432\u0435\u0442',
                                 border: OutlineInputBorder(),
                               ),
                             ),
@@ -318,7 +345,9 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                               const SizedBox(height: 16),
                               _FeedbackBadge(
                                 text: _feedback!,
-                                success: _feedback!.startsWith('Верно'),
+                                success: _feedback!.startsWith(
+                                  '\u0412\u0435\u0440\u043d\u043e',
+                                ),
                               ),
                             ],
                           ],
@@ -340,7 +369,11 @@ class _VocabularyTrainingScreenState extends State<VocabularyTrainingScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(_checked ? nextButtonLabel : 'Проверить'),
+                            : Text(
+                                _checked
+                                    ? nextButtonLabel
+                                    : '\u041f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c',
+                              ),
                       ),
                     ),
                   ],
@@ -374,14 +407,14 @@ class _CompletedView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Сессия завершена',
+                '\u0421\u0435\u0441\u0441\u0438\u044f \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430',
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Правильных ответов: $correctAnswers из $total',
+                '\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0445 \u043e\u0442\u0432\u0435\u0442\u043e\u0432: $correctAnswers \u0438\u0437 $total',
                 style: textTheme.titleMedium,
               ),
             ],
