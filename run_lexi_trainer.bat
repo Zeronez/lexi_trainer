@@ -12,7 +12,9 @@ echo.
 where flutter >nul 2>nul
 if errorlevel 1 (
   echo [ОШИБКА] Flutter не найден в PATH.
-  echo Установите Flutter и добавьте его в PATH, затем запустите файл снова.
+  echo Проверьте установку Flutter и переменную PATH.
+  echo.
+  pause
   popd
   exit /b 1
 )
@@ -20,14 +22,18 @@ if errorlevel 1 (
 echo [1/2] Выполняю flutter pub get...
 flutter pub get
 if errorlevel 1 (
+  echo.
   echo [ОШИБКА] flutter pub get завершился с ошибкой.
+  echo Проверьте интернет/зависимости и попробуйте снова.
+  echo.
+  pause
   popd
   exit /b 1
 )
 
 :menu
 echo.
-echo Выберите режим:
+echo Выберите режим (через 10 сек по умолчанию запустится Chrome):
 echo   1 - Запуск в Chrome
 echo   2 - Запуск для Windows
 echo   3 - Запуск с Supabase dart-define
@@ -35,7 +41,7 @@ echo   4 - flutter analyze
 echo   5 - flutter test
 echo   0 - Выход
 echo.
-choice /c 123450 /n /m "Введите номер режима: "
+choice /c 123450 /t 10 /d 1 /n /m "Введите номер режима: "
 set "choice=%errorlevel%"
 
 if "%choice%"=="6" goto exit
@@ -50,12 +56,22 @@ goto exit
 echo.
 echo [ЗАПУСК] flutter run -d chrome
 flutter run -d chrome
+if errorlevel 1 (
+  echo.
+  echo [ОШИБКА] Не удалось запустить в Chrome.
+  echo Убедитесь, что Chrome установлен и flutter doctor не показывает критичных ошибок.
+)
 goto menu
 
 :run_windows
 echo.
 echo [ЗАПУСК] flutter run -d windows
 flutter run -d windows
+if errorlevel 1 (
+  echo.
+  echo [ОШИБКА] Не удалось запустить Windows-версию.
+  echo Проверьте, что включена desktop-поддержка: flutter config --enable-windows-desktop
+)
 goto menu
 
 :run_define
@@ -65,6 +81,10 @@ set /p SUPABASE_PUBLISHABLE_KEY=Введите SUPABASE_PUBLISHABLE_KEY:
 echo.
 echo [ЗАПУСК] flutter run с dart-define для Supabase
 flutter run --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_PUBLISHABLE_KEY=%SUPABASE_PUBLISHABLE_KEY%
+if errorlevel 1 (
+  echo.
+  echo [ОШИБКА] Запуск с dart-define завершился ошибкой.
+)
 goto menu
 
 :analyze
@@ -82,5 +102,7 @@ goto menu
 :exit
 echo.
 echo Завершение работы.
+echo.
+pause
 popd
 endlocal
