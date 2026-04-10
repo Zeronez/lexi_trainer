@@ -40,7 +40,7 @@ Owner split:
 [x] Frontend-agent: add assignment list (active/completed/overdue)
 [x] Frontend-agent: persist executions/attempts/question_answers
 [x] Backend-agent: SQL/RPC for assignment lifecycle (start/submit/complete)
-[ ] QA-agent: lifecycle regression tests
+[x] QA-agent: lifecycle regression tests
 [x] Git-agent: push Sprint B milestone
 Acceptance:
 [x] Student session fully data-driven
@@ -49,16 +49,16 @@ Acceptance:
 
 Milestone 3 - Achievements & Notifications Live (Sprint C)
 Owner split:
-[ ] Backend-agent: achievements awarding logic (SQL/RPC)
-[ ] Backend-agent: notifications creation/delivery workflow
-[ ] Frontend-agent: achievements screen from DB only
-[ ] Frontend-agent: notifications inbox screen from DB
-[ ] QA-agent: regression tests for awarding and notifications
+[x] Backend-agent: achievements awarding logic (SQL/RPC)
+[x] Backend-agent: notifications creation/delivery workflow
+[x] Frontend-agent: achievements screen from DB only
+[x] Frontend-agent: notifications inbox screen from DB
+[x] QA-agent: regression tests for awarding and notifications
 [ ] Git-agent: push Sprint C milestone
 Acceptance:
-[ ] Achievements list and progress from DB
-[ ] New notifications visible in app inbox
-[ ] No hardcoded achievement/notification records in UI
+[x] Achievements list and progress from DB
+[x] New notifications visible in app inbox
+[x] No hardcoded achievement/notification records in UI
 
 Milestone 4 - Security & Data Integrity (Sprint D)
 Owner split:
@@ -90,7 +90,8 @@ Cross-cutting blockers (must be resolved ASAP):
 
 Current active sprint:
 [x] Sprint A - Admin Real Data
-[-] Sprint B - Student Real Learning Flow
+[x] Sprint B - Student Real Learning Flow
+[-] Sprint C - Achievements & Notifications Live
 
 Handoff protocol:
 [ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]

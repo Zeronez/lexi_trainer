@@ -18,7 +18,16 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text('Админ-раздел'), findsOneWidget);
+    expect(
+      find.text(
+        '\u0410\u0434\u043c\u0438\u043d-\u0440\u0430\u0437\u0434\u0435\u043b',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text('\u0412\u0445\u043e\u0434\u044f\u0449\u0438\u0435'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('hides admin section button for student role', (tester) async {
@@ -32,6 +41,15 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text('Админ-раздел'), findsNothing);
+    expect(
+      find.text(
+        '\u0410\u0434\u043c\u0438\u043d-\u0440\u0430\u0437\u0434\u0435\u043b',
+      ),
+      findsNothing,
+    );
+    expect(
+      find.text('\u0412\u0445\u043e\u0434\u044f\u0449\u0438\u0435'),
+      findsOneWidget,
+    );
   });
 }

@@ -1,5 +1,5 @@
 ﻿Lexi Trainer - Master Roadmap (Conductor)
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
 Legend:
 [ ] not started
@@ -90,19 +90,26 @@ Current sprint (this turn)
 [x] Backend-agent: add RPC lifecycle functions for task start/attempt/answer/complete
 [x] Frontend-agent: add real assignments screen and DB-driven training entrypoint
 [x] Frontend-agent: persist attempts and question answers from training session to DB
-[ ] QA-agent: lifecycle regressions for assignment execution persistence
+[x] QA-agent: lifecycle regressions for assignment execution persistence
 [x] Git-agent: commit + push Sprint B milestone to origin/main
 [x] QA-agent: add persistence flow regression contract tests
 [x] Git-agent: commit + push Sprint B persistence increment to origin/main
 [x] Git-agent: commit + push analyze hotfix for Sprint B tests
+[x] Backend-agent: add achievements/notifications RPC migration + docs
+[x] Frontend-agent: replace achievements with DB-backed repository flow
+[x] Frontend-agent: add notifications inbox screen with DB-backed repository flow
+[x] QA-agent: add/update widget regressions for achievements, notifications, and home navigation
+[ ] Git-agent: commit + push Sprint C milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 1bf3274
+- 6860b71
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
-- QA lifecycle regressions are contract-level; needs final binding to production widget path.
+- Sprint C migration must be applied in Supabase project before production run.
+
+

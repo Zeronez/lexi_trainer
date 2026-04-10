@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lexi_trainer/core/auth/current_user_role_provider.dart';
 import 'package:lexi_trainer/core/auth/user_role.dart';
-import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/core/theme/app_colors.dart';
+import 'package:lexi_trainer/features/achievements/presentation/achievements_screen.dart';
 import 'package:lexi_trainer/features/admin/presentation/admin_dashboard_screen.dart';
 import 'package:lexi_trainer/features/learning/presentation/learning_assignments_screen.dart';
+import 'package:lexi_trainer/features/notifications/presentation/notifications_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -32,7 +33,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Изучайте лексику в спокойных и коротких сессиях.',
+                '\u0418\u0437\u0443\u0447\u0430\u0439\u0442\u0435 \u043b\u0435\u043a\u0441\u0438\u043a\u0443 \u0432 \u0441\u043f\u043e\u043a\u043e\u0439\u043d\u044b\u0445 \u0438 \u043a\u043e\u0440\u043e\u0442\u043a\u0438\u0445 \u0441\u0435\u0441\u0441\u0438\u044f\u0445.',
                 style: textTheme.titleMedium?.copyWith(height: 1.35),
               ),
               const SizedBox(height: 32),
@@ -48,7 +49,9 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: const Text('Начать тренировку'),
+                  child: const Text(
+                    '\u041d\u0430\u0447\u0430\u0442\u044c \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0443',
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -62,7 +65,26 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: const Text('Мои достижения'),
+                  child: const Text(
+                    '\u041c\u043e\u0438 \u0434\u043e\u0441\u0442\u0438\u0436\u0435\u043d\u0438\u044f',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.inbox_outlined),
+                  label: const Text(
+                    '\u0412\u0445\u043e\u0434\u044f\u0449\u0438\u0435',
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -82,7 +104,9 @@ class HomeScreen extends ConsumerWidget {
                         );
                       },
                       icon: const Icon(Icons.admin_panel_settings_outlined),
-                      label: const Text('Админ-раздел'),
+                      label: const Text(
+                        '\u0410\u0434\u043c\u0438\u043d-\u0440\u0430\u0437\u0434\u0435\u043b',
+                      ),
                     ),
                   );
                 },
@@ -127,14 +151,14 @@ class _ProgressCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Прогресс за неделю',
+                        '\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u0437\u0430 \u043d\u0435\u0434\u0435\u043b\u044e',
                         style: textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Изучено 18 из 30 слов',
+                        '\u0418\u0437\u0443\u0447\u0435\u043d\u043e 18 \u0438\u0437 30 \u0441\u043b\u043e\u0432',
                         style: textTheme.bodyMedium,
                       ),
                     ],
