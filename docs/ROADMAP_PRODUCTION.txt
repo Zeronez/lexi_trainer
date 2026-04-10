@@ -54,7 +54,7 @@ Owner split:
 [x] Frontend-agent: achievements screen from DB only
 [x] Frontend-agent: notifications inbox screen from DB
 [x] QA-agent: regression tests for awarding and notifications
-[ ] Git-agent: push Sprint C milestone
+[x] Git-agent: push Sprint C milestone
 Acceptance:
 [x] Achievements list and progress from DB
 [x] New notifications visible in app inbox
@@ -91,7 +91,8 @@ Cross-cutting blockers (must be resolved ASAP):
 Current active sprint:
 [x] Sprint A - Admin Real Data
 [x] Sprint B - Student Real Learning Flow
-[-] Sprint C - Achievements & Notifications Live
+[x] Sprint C - Achievements & Notifications Live
+[-] Sprint D - Security & Data Integrity
 
 Handoff protocol:
 [ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]
