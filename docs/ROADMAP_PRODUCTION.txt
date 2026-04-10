@@ -74,13 +74,13 @@ Acceptance:
 
 Milestone 5 - Release Readiness (Sprint E)
 Owner split:
-[ ] DevOps-agent: release workflow(s) and artifact retention
-[ ] DevOps-agent: runbook for rollback/recovery
-[ ] QA-agent: UAT checklist and pre-release gate
-[ ] Conductor: freeze criteria and release sign-off doc
+[x] DevOps-agent: release workflow(s) and artifact retention
+[x] DevOps-agent: runbook for rollback/recovery
+[x] QA-agent: UAT checklist and pre-release gate
+[x] Conductor: freeze criteria and release sign-off doc
 [ ] Git-agent: push Sprint E milestone
 Acceptance:
-[ ] Reproducible release process documented
+[x] Reproducible release process documented
 [ ] UAT checklist completed with no open P0/P1 issues
 [ ] Final production candidate approved
 

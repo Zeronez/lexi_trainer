@@ -1,0 +1,51 @@
+name: Release Readiness
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release_readiness:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed --output=none .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Validate Supabase test secrets
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing SUPABASE_URL (set as Secret or Variable)" && exit 1)
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || (echo "Missing SUPABASE_PUBLISHABLE_KEY (set as Secret or Variable)" && exit 1)
+
+      - name: Test
+        run: >
+          flutter test
+          --dart-define=SUPABASE_URL=$SUPABASE_URL
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
+
+      - name: Build web release
+        run: flutter build web --release
+
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexi-trainer-web-release
+          path: build/web
+          if-no-files-found: error

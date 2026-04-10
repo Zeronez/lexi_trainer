@@ -11,3 +11,5 @@ Apply migrations in filename order:
 7. `20260410_000007_security_data_integrity_hardening.sql` - hardens RLS policies, adds staff/private-data helper functions, profile integrity trigger, constraints, and duplicate-prevention indexes.
 
 The seed migration must run before the auth bootstrap trigger because new profiles use the seeded `student` role. The helper/trigger migration must run before the RLS migration so policies can rely on the same profile model and helper functions.
+
+For release runbooks, pre-release checks, rollback guidance, and smoke SQL, see `docs/SUPABASE_RELEASE_OPERATIONS.md`.

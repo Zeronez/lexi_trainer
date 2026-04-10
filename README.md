@@ -54,6 +54,8 @@ The pipeline now also includes a separate `security_regression` job. It reuses t
 The pipeline is designed to catch formatting issues, static analysis warnings, permission regressions, and test failures before changes are merged. This keeps the main branch stable and gives fast feedback during development.
 Widget tests initialize Supabase with real project credentials from GitHub Actions secrets, and the security/regression job verifies both role-based UI behavior and a live Supabase REST handshake.
 
+For release readiness, use the manual `Release Readiness` workflow in `.github/workflows/release_pipeline.yml`. After it finishes, download the `lexi-trainer-web-release` artifact from the workflow run.
+
 ## Running With Supabase
 
 Pass runtime configuration through `--dart-define` values:
