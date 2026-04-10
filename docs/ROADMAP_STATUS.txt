@@ -120,12 +120,13 @@ Handoff protocol for next sessions
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- 861e214
+- a19d898
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
 - Sprint D migration must be applied in Supabase project before production run.
-- Release Readiness workflow must complete green on main for final candidate approval.
+- Release Readiness workflow must complete green on main for final candidate approval (run manually from GitHub Actions UI).
+
 
 
 
