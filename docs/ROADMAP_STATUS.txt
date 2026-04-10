@@ -111,6 +111,8 @@ Current sprint (this turn)
 [x] DevOps-agent: add release rollback/recovery runbook with UAT P0/P1 gate
 [x] Backend-agent: add Supabase release operations runbook (pre-checks, rollback, smoke SQL)
 [x] Conductor: add release freeze criteria and sign-off document
+[x] QA-agent: add UAT execution report and release candidate decision log templates
+[x] Backend-agent: add Sprint E read-only post-release smoke SQL script
 [x] Git-agent: commit + push Sprint E milestone to origin/main
 
 Handoff protocol for next sessions

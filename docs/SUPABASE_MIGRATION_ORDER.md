@@ -13,3 +13,5 @@ Apply migrations in filename order:
 The seed migration must run before the auth bootstrap trigger because new profiles use the seeded `student` role. The helper/trigger migration must run before the RLS migration so policies can rely on the same profile model and helper functions.
 
 For release runbooks, pre-release checks, rollback guidance, and smoke SQL, see `docs/SUPABASE_RELEASE_OPERATIONS.md`.
+
+After applying migrations for a release, run `supabase/validation/sprint_e_post_release_smoke.sql` as the read-only post-release smoke check.

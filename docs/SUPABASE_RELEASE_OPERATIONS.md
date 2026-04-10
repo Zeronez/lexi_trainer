@@ -1,4 +1,4 @@
-﻿# Supabase Release Operations
+# Supabase Release Operations
 
 Production release checklist for Lexi Trainer Supabase changes.
 
@@ -99,65 +99,21 @@ using (public.can_read_private_user_data(id));
 
 ## Post-Release Smoke SQL Checks
 
-Run after production migration completes:
+Run the read-only smoke script after production migration completes:
 
-```sql
--- Confirm hardening functions exist.
-select proname
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and proname in (
-    'can_read_private_user_data',
-    'can_manage_user_as_staff',
-    'can_read_task_execution',
-    'recalculate_user_achievements',
-    'create_user_notification'
-  )
-order by proname;
-
--- Confirm critical policies are present.
-select schemaname, tablename, policyname, cmd
-from pg_policies
-where schemaname = 'public'
-  and tablename in (
-    'users',
-    'task_executions',
-    'attempts',
-    'question_answers',
-    'notifications',
-    'user_achievements_link'
-  )
-order by tablename, policyname;
-
--- Confirm constraints were created.
-select conrelid::regclass as table_name, conname, convalidated
-from pg_constraint
-where conname in (
-    'tasks_dates_order_chk',
-    'attempts_time_order_chk',
-    'notifications_type_not_blank_chk',
-    'notifications_text_not_blank_chk',
-    'achievements_name_not_blank_chk',
-    'achievements_condition_not_blank_chk'
-  )
-order by table_name::text, conname;
-
--- Confirm optional unique indexes if source data allowed them.
-select schemaname, tablename, indexname
-from pg_indexes
-where schemaname = 'public'
-  and indexname in (
-    'idx_task_executions_user_task_unique',
-    'idx_question_answers_attempt_word_unique',
-    'idx_achievements_condition_text_unique'
-  )
-order by tablename, indexname;
-
--- Basic RPC smoke with an authenticated test user in staging only.
--- In production, run only if a safe internal test account exists.
-select * from public.recalculate_user_achievements(null::uuid);
+```bash
+psql "$SUPABASE_DB_URL" -f supabase/validation/sprint_e_post_release_smoke.sql
 ```
+
+You can also paste the file into the Supabase SQL Editor. The script does not run DDL/DML and does not call write-capable RPC; it only reports function/policy/constraint/index presence, table counts, and data issue counts.
+
+Review expectations:
+
+1. Required functions and critical policies should show `exists = true`.
+2. Critical tables should show `rls_enabled = true`.
+3. Integrity constraints should show `exists = true`; `convalidated = false` is acceptable for `NOT VALID` constraints until old data is cleaned.
+4. Optional unique indexes should show `exists = true`; if missing, check migration warnings and duplicate data queries.
+5. Data issue counts should be `0` before considering the release healthy.
 
 ## Operational Notes
 

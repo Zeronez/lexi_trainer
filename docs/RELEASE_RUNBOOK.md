@@ -24,6 +24,11 @@ Use the GitHub Actions workflow `Release Readiness` for release verification.
 2. Open the job logs.
 3. Download the artifact from the `Artifacts` section.
 
+### Required release records
+
+- [UAT Execution Report](./UAT_EXECUTION_REPORT.md)
+- [Release Candidate Log](./RELEASE_CANDIDATE_LOG.md)
+
 ## UAT Checklist
 
 ### P0 gate
@@ -81,3 +86,8 @@ Follow these steps if a release needs to be rolled back or recovered.
 - Web build artifact is available.
 - Release branch is in a clean state.
 - Regression tests pass again before redeploy.
+
+### Evidence to attach
+
+- UAT result table from `UAT_EXECUTION_REPORT.md`
+- RC decision entry from `RELEASE_CANDIDATE_LOG.md`
