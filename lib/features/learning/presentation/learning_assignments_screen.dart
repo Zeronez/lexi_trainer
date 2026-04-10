@@ -39,7 +39,7 @@ class _LearningAssignmentsScreenState
       if (words.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Р’ СЌС‚РѕРј РЅР°Р±РѕСЂРµ РїРѕРєР° РЅРµС‚ СЃР»РѕРІ.'),
+            content: Text('В этом наборе пока нет слов.'),
           ),
         );
         return;
@@ -81,7 +81,7 @@ class _LearningAssignmentsScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ Р·Р°РґР°РЅРёРµ: $error',
+            'Не удалось открыть задание: $error',
           ),
         ),
       );
@@ -402,20 +402,20 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.assignment_late_outlined, size: 56),
             const SizedBox(height: 16),
             Text(
-              'РџРѕРєР° РЅРµС‚ Р·Р°РґР°РЅРёР№',
+              'Пока нет заданий',
               style: textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'РљРѕРіРґР° РїСЂРµРїРѕРґР°РІР°С‚РµР»СЊ РЅР°Р·РЅР°С‡РёС‚ РЅР°Р±РѕСЂ СЃР»РѕРІ, РѕРЅ РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ.',
+              'Когда преподаватель назначит набор слов, он появится здесь.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: onRefresh,
-              child: const Text('РћР±РЅРѕРІРёС‚СЊ'),
+              child: const Text('Обновить'),
             ),
           ],
         ),
@@ -443,7 +443,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 56, color: AppColors.accent),
             const SizedBox(height: 16),
             Text(
-              'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РґР°РЅРёСЏ',
+              'Не удалось загрузить задания',
               style: textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
@@ -454,7 +454,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+              child: const Text('Повторить'),
             ),
           ],
         ),
@@ -487,8 +487,8 @@ class _AssignmentAvailability {
     if (statusName == 'completed') {
       return const _AssignmentAvailability(
         canOpen: false,
-        label: 'Р—Р°РІРµСЂС€РµРЅРѕ',
-        actionLabel: 'Р—Р°РІРµСЂС€РµРЅРѕ',
+        label: 'Завершено',
+        actionLabel: 'Завершено',
         icon: Icons.check_circle_outline,
         color: AppColors.success,
       );
@@ -497,8 +497,8 @@ class _AssignmentAvailability {
     if (assignment.startDate != null && assignment.startDate!.isAfter(now)) {
       return _AssignmentAvailability(
         canOpen: false,
-        label: 'РћС‚РєСЂРѕРµС‚СЃСЏ ${_formatDateTime(assignment.startDate!)}',
-        actionLabel: 'РџРѕРєР° РЅРµРґРѕСЃС‚СѓРїРЅРѕ',
+        label: 'Откроется ${_formatDateTime(assignment.startDate!)}',
+        actionLabel: 'Пока недоступно',
         icon: Icons.schedule_outlined,
         color: AppColors.accent,
       );
@@ -509,8 +509,8 @@ class _AssignmentAvailability {
         !assignment.availableAfterEnd) {
       return const _AssignmentAvailability(
         canOpen: false,
-        label: 'Р”РµРґР»Р°Р№РЅ РїСЂРѕС€С‘Р»',
-        actionLabel: 'РќРµРґРѕСЃС‚СѓРїРЅРѕ',
+        label: 'Дедлайн прошёл',
+        actionLabel: 'Недоступно',
         icon: Icons.event_busy_outlined,
         color: AppColors.accent,
       );
@@ -519,8 +519,8 @@ class _AssignmentAvailability {
     if (statusName == 'in_progress') {
       return const _AssignmentAvailability(
         canOpen: true,
-        label: 'РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ',
-        actionLabel: 'РџСЂРѕРґРѕР»Р¶РёС‚СЊ',
+        label: 'Можно продолжить',
+        actionLabel: 'Продолжить',
         icon: Icons.play_circle_outline,
         color: AppColors.success,
       );
@@ -528,8 +528,8 @@ class _AssignmentAvailability {
 
     return const _AssignmentAvailability(
       canOpen: true,
-      label: 'Р”РѕСЃС‚СѓРїРЅРѕ',
-      actionLabel: 'РќР°С‡Р°С‚СЊ',
+      label: 'Доступно',
+      actionLabel: 'Начать',
       icon: Icons.play_arrow_outlined,
       color: AppColors.success,
     );
@@ -538,25 +538,24 @@ class _AssignmentAvailability {
 
 String _assignmentSubtitle(LearningAssignment assignment) {
   final direction = assignment.translateToRussian
-      ? 'РїРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'
-      : 'РїРµСЂРµРІРѕРґ РЅР° Р°РЅРіР»РёР№СЃРєРёР№';
+      ? 'перевод на русский'
+      : 'перевод на английский';
   final startDate = assignment.startDate == null
-      ? 'Р±РµР· РґР°С‚С‹ РЅР°С‡Р°Р»Р°'
-      : 'СЃС‚Р°СЂС‚: ${_formatDateTime(assignment.startDate!)}';
+      ? 'без даты начала'
+      : 'старт: ${_formatDateTime(assignment.startDate!)}';
   final deadline = assignment.deadline == null
-      ? 'Р±РµР· РґРµРґР»Р°Р№РЅР°'
-      : 'РґРµРґР»Р°Р№РЅ: ${_formatDateTime(assignment.deadline!)}';
-
-  return '$startDate В· $deadline В· РїРѕРїС‹С‚РѕРє: ${assignment.attemptsCount} В· $direction';
+      ? 'без дедлайна'
+      : 'дедлайн: ${_formatDateTime(assignment.deadline!)}';
+  return '$startDate · $deadline · попыток: ${assignment.attemptsCount} · $direction';
 }
 
 String _statusLabel(String? statusName) {
   return switch (statusName) {
-    'assigned' => 'РќР°Р·РЅР°С‡РµРЅРѕ',
-    'in_progress' => 'Р’ СЂР°Р±РѕС‚Рµ',
-    'completed' => 'Р—Р°РІРµСЂС€РµРЅРѕ',
-    'overdue' => 'РџСЂРѕСЃСЂРѕС‡РµРЅРѕ',
-    _ => 'РќРµ РЅР°С‡Р°С‚Рѕ',
+    'assigned' => 'Назначено',
+    'in_progress' => 'В работе',
+    'completed' => 'Завершено',
+    'overdue' => 'Просрочено',
+    _ => 'Не начато',
   };
 }
 

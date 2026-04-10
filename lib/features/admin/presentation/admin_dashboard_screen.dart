@@ -71,7 +71,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshSets();
       _showMessage(
-        'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ СЃРѕ СЃР»РѕРІР°РјРё СЃРѕР·РґР°РЅ.',
+        'Словарный набор со словами создан.',
       );
     } catch (error) {
       _showError(error);
@@ -87,8 +87,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final data = await showDialog<_GroupFormData>(
       context: context,
       builder: (context) => _StudyGroupFormDialog(
-        title: 'РќРѕРІР°СЏ СѓС‡РµР±РЅР°СЏ РіСЂСѓРїРїР°',
-        actionLabel: 'РЎРѕР·РґР°С‚СЊ',
+        title: 'Новая учебная группа',
+        actionLabel: 'Создать',
         students: students,
       ),
     );
@@ -106,7 +106,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshGroups();
       _refreshStudents();
-      _showMessage('Р“СЂСѓРїРїР° СЃРѕР·РґР°РЅР°.');
+      _showMessage('Группа создана.');
     } catch (error) {
       _showError(error);
     }
@@ -122,7 +122,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
     if (sets.isEmpty) {
       _showMessage(
-        'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ.',
+        'Сначала создайте словарный набор.',
       );
       return;
     }
@@ -130,8 +130,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final data = await showDialog<_TaskFormData>(
       context: context,
       builder: (context) => _TaskFormDialog(
-        title: 'РќРѕРІРѕРµ Р·Р°РґР°РЅРёРµ',
-        actionLabel: 'РЎРѕР·РґР°С‚СЊ',
+        title: 'Новое задание',
+        actionLabel: 'Создать',
         sets: sets,
       ),
     );
@@ -152,7 +152,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshTasks();
-      _showMessage('Р—Р°РґР°РЅРёРµ СЃРѕР·РґР°РЅРѕ.');
+      _showMessage('Задание создано.');
     } catch (error) {
       _showError(error);
     }
@@ -240,7 +240,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshSets();
       _refreshTasks();
-      _showMessage('РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ РѕР±РЅРѕРІР»РµРЅ.');
+      _showMessage('Словарный набор обновлен.');
     } catch (error) {
       _showError(error);
     }
@@ -248,9 +248,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Future<void> _deleteSet(AdminVocabularySetListItem item) async {
     final confirmed = await _confirmDelete(
-      title: 'РЈРґР°Р»РёС‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ?',
+      title: 'Удалить словарный набор?',
       message:
-          'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ "${item.themeName}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ. РЎРІСЏР·Р°РЅРЅС‹Рµ Р·Р°РґР°РЅРёСЏ С‚Р°РєР¶Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ СѓРґР°Р»РµРЅС‹.',
+          'Словарный набор "${item.themeName}" будет удален. Связанные задания также могут быть удалены.',
     );
     if (!confirmed) {
       return;
@@ -263,7 +263,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshSets();
       _refreshTasks();
-      _showMessage('РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ СѓРґР°Р»РµРЅ.');
+      _showMessage('Словарный набор удален.');
     } catch (error) {
       _showError(error);
     }
@@ -293,8 +293,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final data = await showDialog<_GroupFormData>(
       context: context,
       builder: (context) => _StudyGroupFormDialog(
-        title: 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РіСЂСѓРїРїСѓ',
-        actionLabel: 'РЎРѕС…СЂР°РЅРёС‚СЊ',
+        title: 'Редактировать группу',
+        actionLabel: 'Сохранить',
         initialGroupId: item.id,
         initialName: item.name,
         students: students,
@@ -315,7 +315,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshGroups();
       _refreshStudents();
-      _showMessage('Р“СЂСѓРїРїР° РѕР±РЅРѕРІР»РµРЅР°.');
+      _showMessage('Группа обновлена.');
     } catch (error) {
       _showError(error);
     }
@@ -323,9 +323,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Future<void> _deleteGroup(AdminStudyGroupListItem item) async {
     final confirmed = await _confirmDelete(
-      title: 'РЈРґР°Р»РёС‚СЊ РіСЂСѓРїРїСѓ?',
+      title: 'Удалить группу?',
       message:
-          'Р“СЂСѓРїРїР° "${item.name}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅР°. РЎС‚СѓРґРµРЅС‚С‹ РѕСЃС‚Р°РЅСѓС‚СЃСЏ Р±РµР· С‚РµРєСѓС‰РµР№ РіСЂСѓРїРїС‹.',
+          'Группа "${item.name}" будет удалена. Студенты останутся без текущей группы.',
     );
     if (!confirmed) {
       return;
@@ -338,7 +338,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
       _refreshGroups();
       _refreshStudents();
-      _showMessage('Р“СЂСѓРїРїР° СѓРґР°Р»РµРЅР°.');
+      _showMessage('Группа удалена.');
     } catch (error) {
       _showError(error);
     }
@@ -358,7 +358,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
     if (sets.isEmpty) {
       _showMessage(
-        'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ.',
+        'Сначала создайте словарный набор.',
       );
       return;
     }
@@ -366,8 +366,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final data = await showDialog<_TaskFormData>(
       context: context,
       builder: (context) => _TaskFormDialog(
-        title: 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ Р·Р°РґР°РЅРёРµ',
-        actionLabel: 'РЎРѕС…СЂР°РЅРёС‚СЊ',
+        title: 'Редактировать задание',
+        actionLabel: 'Сохранить',
         sets: sets,
         initialItem: item,
       ),
@@ -390,7 +390,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshTasks();
-      _showMessage('Р—Р°РґР°РЅРёРµ РѕР±РЅРѕРІР»РµРЅРѕ.');
+      _showMessage('Задание обновлено.');
     } catch (error) {
       _showError(error);
     }
@@ -398,9 +398,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Future<void> _deleteTask(AdminTaskListItem item) async {
     final confirmed = await _confirmDelete(
-      title: 'РЈРґР°Р»РёС‚СЊ Р·Р°РґР°РЅРёРµ?',
+      title: 'Удалить задание?',
       message:
-          'Р—Р°РґР°РЅРёРµ РїРѕ РЅР°Р±РѕСЂСѓ "${item.vocabularySetName}" Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ.',
+          'Задание по набору "${item.vocabularySetName}" будет удалено.',
     );
     if (!confirmed) {
       return;
@@ -412,7 +412,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshTasks();
-      _showMessage('Р—Р°РґР°РЅРёРµ СѓРґР°Р»РµРЅРѕ.');
+      _showMessage('Задание удалено.');
     } catch (error) {
       _showError(error);
     }
@@ -430,11 +430,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('РћС‚РјРµРЅР°'),
+            child: const Text('Отмена'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('РЈРґР°Р»РёС‚СЊ'),
+            child: const Text('Удалить'),
           ),
         ],
       ),
@@ -454,7 +454,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ: $error')),
+      SnackBar(content: Text('Не удалось сохранить: $error')),
     );
   }
 
@@ -465,7 +465,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ: $error',
+          'Не удалось загрузить данные: $error',
         ),
       ),
     );
@@ -479,19 +479,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, __) => _AdminAccessDeniedScreen(
-        title: 'РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРёС‚СЊ РґРѕСЃС‚СѓРї',
+        title: 'Не удалось проверить доступ',
         message:
-            'РџСЂРѕРІРµСЂСЊС‚Рµ СЃРѕРµРґРёРЅРµРЅРёРµ Рё РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р·. Р•СЃР»Рё РѕС€РёР±РєР° РїРѕРІС‚РѕСЂСЏРµС‚СЃСЏ, РІРѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚ Р·Р°РЅРѕРІРѕ.',
-        actionLabel: 'РџРѕРІС‚РѕСЂРёС‚СЊ',
+            'Проверьте соединение и попробуйте еще раз. Если ошибка повторяется, войдите в аккаунт заново.',
+        actionLabel: 'Повторить',
         onAction: () => ref.invalidate(currentUserRoleProvider),
       ),
       data: (role) {
         if (!role.canOpenAdminSection) {
           return _AdminAccessDeniedScreen(
-            title: 'Р”РѕСЃС‚СѓРї Рє Р°РґРјРёРЅ-РїР°РЅРµР»Рё Р·Р°РєСЂС‹С‚',
+            title: 'Доступ к админ-панели закрыт',
             message:
-                'Р­С‚Р° СЃС‚СЂР°РЅРёС†Р° РґРѕСЃС‚СѓРїРЅР° С‚РѕР»СЊРєРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°Рј Рё РїСЂРµРїРѕРґР°РІР°С‚РµР»СЏРј.',
-            actionLabel: 'РќР°Р·Р°Рґ',
+                'Эта страница доступна только администраторам и преподавателям.',
+            actionLabel: 'Назад',
             onAction: () {
               Navigator.of(context).maybePop();
             },
@@ -546,7 +546,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               actions: [
                 if (role.canOpenAdminSection)
                   IconButton(
-                    tooltip: 'РћС‚С‡РµС‚',
+                    tooltip: 'Отчет',
                     onPressed: _showReport,
                     icon: const Icon(Icons.receipt_long_outlined),
                   ),
@@ -580,7 +580,7 @@ class _AdminAccessDeniedScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('РђРґРјРёРЅ-СЂР°Р·РґРµР»')),
+      appBar: AppBar(title: const Text('Админ-раздел')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
@@ -638,19 +638,19 @@ class _ContentManagementTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminVocabularySetListItem>(
-      title: 'РЈРїСЂР°РІР»РµРЅРёРµ СЃР»РѕРІР°СЂСЏРјРё',
+      title: 'Управление словарями',
       description:
-          'РЎРѕР·РґР°РІР°Р№С‚Рµ СЃР»РѕРІР°СЂРЅС‹Рµ РЅР°Р±РѕСЂС‹, РЅР°РїРѕР»РЅСЏР№С‚Рµ РёС… СЃР»РѕРІР°РјРё Рё РёСЃРїРѕР»СЊР·СѓР№С‚Рµ РєР°Рє РѕСЃРЅРѕРІСѓ РґР»СЏ Р·Р°РґР°РЅРёР№.',
-      actionText: 'Р”РѕР±Р°РІРёС‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
-      emptyText: 'РЎР»РѕРІР°СЂРЅС‹С… РЅР°Р±РѕСЂРѕРІ РїРѕРєР° РЅРµС‚.',
+          'Создавайте словарные наборы, наполняйте их словами и используйте как основу для заданий.',
+      actionText: 'Добавить словарный набор',
+      emptyText: 'Словарных наборов пока нет.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'РўРµРјР°: ${item.themeName}',
+        title: 'Тема: ${item.themeName}',
         subtitle:
-            'CEFR ${item.cefrLevel} В· СЃРѕР·РґР°РЅРѕ: ${_formatDate(item.createdAt)}',
-        status: 'Р”РѕСЃС‚СѓРїРЅРѕ',
+            'CEFR ${item.cefrLevel} · создано: ${_formatDate(item.createdAt)}',
+        status: 'Доступно',
         onView: () => onView(item),
         onEdit: () => onEdit(item),
         onDelete: () => onDelete(item),
@@ -679,18 +679,18 @@ class _GroupManagementTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminStudyGroupListItem>(
-      title: 'РЈРїСЂР°РІР»РµРЅРёРµ СѓС‡РµР±РЅС‹РјРё РіСЂСѓРїРїР°РјРё',
+      title: 'Управление учебными группами',
       description:
-          'РЎРѕР·РґР°РІР°Р№С‚Рµ СѓС‡РµР±РЅС‹Рµ РіСЂСѓРїРїС‹ РґР»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ РЅР°Р·РЅР°С‡РµРЅРёСЏ СЃС‚СѓРґРµРЅС‚РѕРІ Рё РїСЂРµРїРѕРґР°РІР°С‚РµР»РµР№.',
-      actionText: 'РЎРѕР·РґР°С‚СЊ РіСЂСѓРїРїСѓ',
-      emptyText: 'РЈС‡РµР±РЅС‹С… РіСЂСѓРїРї РїРѕРєР° РЅРµС‚.',
+          'Создавайте учебные группы для дальнейшего назначения студентов и преподавателей.',
+      actionText: 'Создать группу',
+      emptyText: 'Учебных групп пока нет.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'Р“СЂСѓРїРїР° ${item.name}',
-        subtitle: 'РЎРѕР·РґР°РЅР°: ${_formatDate(item.createdAt)}',
-        status: 'РђРєС‚РёРІРЅР°',
+        title: 'Группа ${item.name}',
+        subtitle: 'Создана: ${_formatDate(item.createdAt)}',
+        status: 'Активна',
         onView: () => onView(item),
         onEdit: () => onEdit(item),
         onDelete: () => onDelete(item),
@@ -719,16 +719,16 @@ class _TaskManagementTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminTaskListItem>(
-      title: 'РЈРїСЂР°РІР»РµРЅРёРµ Р·Р°РґР°РЅРёСЏРјРё',
+      title: 'Управление заданиями',
       description:
-          'РџР»Р°РЅРёСЂСѓР№С‚Рµ РґРµРґР»Р°Р№РЅС‹, РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє Рё РЅР°РїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРІРѕРґР°.',
-      actionText: 'РЎРѕР·РґР°С‚СЊ Р·Р°РґР°РЅРёРµ',
-      emptyText: 'Р—Р°РґР°РЅРёР№ РїРѕРєР° РЅРµС‚.',
+          'Планируйте дедлайны, количество попыток и направление перевода.',
+      actionText: 'Создать задание',
+      emptyText: 'Заданий пока нет.',
       items: items,
       onRefresh: onRefresh,
       onCreate: onCreate,
       itemBuilder: (item) => _AdminItemCard(
-        title: 'Р—Р°РґР°РЅРёРµ: ${item.vocabularySetName}',
+        title: 'Задание: ${item.vocabularySetName}',
         subtitle: _taskSubtitle(item),
         status: _taskStatus(item),
         onView: () => onView(item),
@@ -810,7 +810,7 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
 
     return AlertDialog(
       scrollable: true,
-      title: const Text('РћС‚С‡РµС‚ РїРѕ С‚РµРєСѓС‰РµР№ Р±Р°Р·Рµ'),
+      title: const Text('Отчет по текущей базе'),
       content: SizedBox(
         width: 520,
         child: metricsAsync.when(
@@ -826,7 +826,7 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РѕС‚С‡РµС‚',
+                    'Не удалось сформировать отчет',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -837,7 +837,7 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
                   OutlinedButton.icon(
                     onPressed: _refreshReport,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+                    label: const Text('Повторить'),
                   ),
                 ],
               ),
@@ -848,34 +848,34 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
             children: [
               _ReportMetricCard(
                 title:
-                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… СЃР»РѕРІР°СЂРЅС‹С… РЅР°Р±РѕСЂРѕРІ',
+                    'Количество доступных словарных наборов',
                 value: metrics.vocabularySetCount.toString(),
                 icon: Icons.menu_book_outlined,
                 accentColor: Theme.of(context).colorScheme.primary,
               ),
               _ReportMetricCard(
                 title:
-                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РЅР°Р·РЅР°С‡РµРЅРЅС‹С… Р·Р°РґР°РЅРёР№',
+                    'Количество назначенных заданий',
                 value: metrics.taskCount.toString(),
                 icon: Icons.assignment_outlined,
                 accentColor: Theme.of(context).colorScheme.tertiary,
               ),
               _ReportMetricCard(
                 title:
-                    'РљРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РїРѕР»РЅРµРЅРЅС‹С… Р·Р°РґР°РЅРёР№',
+                    'Количество выполненных заданий',
                 value: metrics.completedTaskCount.toString(),
                 icon: Icons.check_circle_outline,
                 accentColor: AppColors.success,
               ),
               _ReportMetricCard(
-                title: 'РЎСЂРµРґРЅСЏСЏ С‚РѕС‡РЅРѕСЃС‚СЊ РѕС‚РІРµС‚РѕРІ',
+                title: 'Средняя точность ответов',
                 value: _formatPercent(metrics.averageAnswerAccuracyPercent),
                 icon: Icons.insights_outlined,
                 accentColor: Theme.of(context).colorScheme.secondary,
               ),
               _ReportMetricCard(
                 title:
-                    'РљРѕР»РёС‡РµСЃС‚РІРѕ Р°РєС‚РёРІРЅС‹С… СЃС‚СѓРґРµРЅС‚РѕРІ',
+                    'Количество активных студентов',
                 value: metrics.activeStudentCount.toString(),
                 icon: Icons.groups_outlined,
                 accentColor: Theme.of(context).colorScheme.primary,
@@ -887,19 +887,19 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+          child: const Text('Закрыть'),
         ),
         OutlinedButton.icon(
           onPressed: _refreshReport,
           icon: const Icon(Icons.refresh),
-          label: const Text('РћР±РЅРѕРІРёС‚СЊ'),
+          label: const Text('Обновить'),
         ),
         FilledButton.icon(
           onPressed: reportMetrics == null
               ? null
               : () => _downloadPdf(reportMetrics),
           icon: const Icon(Icons.download_outlined),
-          label: const Text('РЎРєР°С‡Р°С‚СЊ PDF'),
+          label: const Text('Скачать PDF'),
         ),
       ],
     );
@@ -983,30 +983,30 @@ class _VocabularySetDetailsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Р”РµС‚Р°Р»Рё СЃР»РѕРІР°СЂРЅРѕРіРѕ РЅР°Р±РѕСЂР°'),
+      title: const Text('Детали словарного набора'),
       content: SizedBox(
         width: 560,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _DetailRow(label: 'РўРµРјР°', value: details.themeName),
+            _DetailRow(label: 'Тема', value: details.themeName),
             _DetailRow(label: 'CEFR', value: details.cefrLevel),
             _DetailRow(
-              label: 'РЎРѕР·РґР°РЅ',
+              label: 'Создан',
               value: _formatDate(details.createdAt),
             ),
-            _DetailRow(label: 'РђРІС‚РѕСЂ', value: details.userId),
+            _DetailRow(label: 'Автор', value: details.userId),
             const SizedBox(height: 16),
             Text(
-              'РЎР»РѕРІР°',
+              'Слова',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             if (details.words.isEmpty)
-              const Text('РЎР»РѕРІР° РЅРµ РЅР°Р№РґРµРЅС‹.')
+              const Text('Слова не найдены.')
             else
               ...details.words.map(
                 (word) => Card(
@@ -1018,9 +1018,9 @@ class _VocabularySetDetailsDialog extends StatelessWidget {
                     subtitle: Text(
                       [
                         if (word.transcription?.isNotEmpty ?? false)
-                          'РўСЂР°РЅСЃРєСЂРёРїС†РёСЏ: ${word.transcription}',
+                          'Транскрипция: ${word.transcription}',
                         if (word.exampleSentence?.isNotEmpty ?? false)
-                          'РџСЂРёРјРµСЂ: ${word.exampleSentence}',
+                          'Пример: ${word.exampleSentence}',
                       ].join('\n'),
                     ),
                   ),
@@ -1032,7 +1032,7 @@ class _VocabularySetDetailsDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+          child: const Text('Закрыть'),
         ),
       ],
     );
@@ -1048,28 +1048,28 @@ class _StudyGroupDetailsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Р”РµС‚Р°Р»Рё СѓС‡РµР±РЅРѕР№ РіСЂСѓРїРїС‹'),
+      title: const Text('Детали учебной группы'),
       content: SizedBox(
         width: 520,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _DetailRow(label: 'РќР°Р·РІР°РЅРёРµ', value: details.name),
+            _DetailRow(label: 'Название', value: details.name),
             _DetailRow(
-              label: 'РЎРѕР·РґР°РЅР°',
+              label: 'Создана',
               value: _formatDate(details.createdAt),
             ),
             const SizedBox(height: 16),
             Text(
-              'РЈС‡Р°СЃС‚РЅРёРєРё',
+              'Участники',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             if (details.members.isEmpty)
-              const Text('Р’ РіСЂСѓРїРїРµ РїРѕРєР° РЅРµС‚ СЃС‚СѓРґРµРЅС‚РѕРІ.')
+              const Text('В группе пока нет студентов.')
             else
               ...details.members.map(
                 (member) => ListTile(
@@ -1085,7 +1085,7 @@ class _StudyGroupDetailsDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+          child: const Text('Закрыть'),
         ),
       ],
     );
@@ -1100,7 +1100,7 @@ class _TaskDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Р”РµС‚Р°Р»Рё Р·Р°РґР°РЅРёСЏ'),
+      title: const Text('Детали задания'),
       content: SizedBox(
         width: 480,
         child: Column(
@@ -1108,32 +1108,32 @@ class _TaskDetailsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _DetailRow(
-              label: 'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+              label: 'Словарный набор',
               value: item.vocabularySetName,
             ),
             _DetailRow(
-              label: 'Р”Р°С‚Р° РЅР°С‡Р°Р»Р°',
+              label: 'Дата начала',
               value: _formatNullableDate(item.startDate),
             ),
             _DetailRow(
-              label: 'Р”РµРґР»Р°Р№РЅ',
+              label: 'Дедлайн',
               value: _formatNullableDate(item.deadline),
             ),
             _DetailRow(
-              label: 'РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє',
+              label: 'Количество попыток',
               value: item.attemptsCount.toString(),
             ),
             _DetailRow(
-              label: 'РќР°РїСЂР°РІР»РµРЅРёРµ',
+              label: 'Направление',
               value: item.translateToRussian
-                  ? 'РџРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'
-                  : 'РџРµСЂРµРІРѕРґ РЅР° Р°РЅРіР»РёР№СЃРєРёР№',
+                  ? 'Перевод на русский'
+                  : 'Перевод на английский',
             ),
             _DetailRow(
-              label: 'РџРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°',
+              label: 'После дедлайна',
               value: item.availableAfterEnd
-                  ? 'Р”РѕСЃС‚СѓРїРЅРѕ'
-                  : 'РќРµРґРѕСЃС‚СѓРїРЅРѕ',
+                  ? 'Доступно'
+                  : 'Недоступно',
             ),
           ],
         ),
@@ -1141,7 +1141,7 @@ class _TaskDetailsDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Р—Р°РєСЂС‹С‚СЊ'),
+          child: const Text('Закрыть'),
         ),
       ],
     );
@@ -1180,7 +1180,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text(
-        'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+        'Редактировать словарный набор',
       ),
       content: Form(
         key: _formKey,
@@ -1190,7 +1190,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
             TextFormField(
               controller: _themeController,
               decoration: const InputDecoration(
-                labelText: 'РќР°Р·РІР°РЅРёРµ С‚РµРјС‹',
+                labelText: 'Название темы',
               ),
               validator: _requiredValidator,
             ),
@@ -1198,7 +1198,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
             TextFormField(
               controller: _cefrController,
               decoration: const InputDecoration(
-                labelText: 'CEFR СѓСЂРѕРІРµРЅСЊ',
+                labelText: 'CEFR уровень',
               ),
               textCapitalization: TextCapitalization.characters,
               validator: _cefrLevelValidator,
@@ -1209,7 +1209,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('РћС‚РјРµРЅР°'),
+          child: const Text('Отмена'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -1223,7 +1223,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
               ),
             );
           },
-          child: const Text('РЎРѕС…СЂР°РЅРёС‚СЊ'),
+          child: const Text('Сохранить'),
         ),
       ],
     );
@@ -1300,7 +1300,7 @@ class _TabLayout<T> extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh),
-              label: const Text('РћР±РЅРѕРІРёС‚СЊ'),
+              label: const Text('Обновить'),
             ),
           ],
         ),
@@ -1377,20 +1377,20 @@ class _AdminItemCard extends StatelessWidget {
                   ),
                 ),
                 PopupMenuButton<_AdminCardAction>(
-                  tooltip: 'Р”РµР№СЃС‚РІРёСЏ',
+                  tooltip: 'Действия',
                   onSelected: _handleAction,
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: _AdminCardAction.view,
-                      child: Text('РџСЂРѕСЃРјРѕС‚СЂ'),
+                      child: Text('Просмотр'),
                     ),
                     PopupMenuItem(
                       value: _AdminCardAction.edit,
-                      child: Text('Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ'),
+                      child: Text('Редактировать'),
                     ),
                     PopupMenuItem(
                       value: _AdminCardAction.delete,
-                      child: Text('РЈРґР°Р»РёС‚СЊ'),
+                      child: Text('Удалить'),
                     ),
                   ],
                 ),
@@ -1447,7 +1447,7 @@ class _ErrorState extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ',
+              'Не удалось загрузить данные',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -1457,7 +1457,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: onRetry,
-              child: const Text('РџРѕРІС‚РѕСЂРёС‚СЊ'),
+              child: const Text('Повторить'),
             ),
           ],
         ),
@@ -1547,11 +1547,11 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
           children: [
             Row(
               children: [
-                Text('РЎР»РѕРІРѕ ${index + 1}', style: titleStyle),
+                Text('Слово ${index + 1}', style: titleStyle),
                 const Spacer(),
                 if (_wordRows.length > 1)
                   IconButton(
-                    tooltip: 'РЈРґР°Р»РёС‚СЊ СЃР»РѕРІРѕ',
+                    tooltip: 'Удалить слово',
                     onPressed: () => _removeWordRow(index),
                     icon: const Icon(Icons.delete_outline),
                   ),
@@ -1561,7 +1561,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.russianController,
               decoration: const InputDecoration(
-                labelText: 'Р СѓСЃСЃРєРѕРµ СЃР»РѕРІРѕ',
+                labelText: 'Русское слово',
               ),
               textInputAction: TextInputAction.next,
               validator: _requiredValidator,
@@ -1570,7 +1570,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.englishController,
               decoration: const InputDecoration(
-                labelText: 'РђРЅРіР»РёР№СЃРєРёР№ РїРµСЂРµРІРѕРґ',
+                labelText: 'Английский перевод',
               ),
               textInputAction: TextInputAction.next,
               validator: _requiredValidator,
@@ -1580,7 +1580,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               controller: controllers.transcriptionController,
               decoration: const InputDecoration(
                 labelText:
-                    'РўСЂР°РЅСЃРєСЂРёРїС†РёСЏ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)',
+                    'Транскрипция (необязательно)',
               ),
               textInputAction: TextInputAction.next,
             ),
@@ -1589,7 +1589,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               controller: controllers.exampleController,
               decoration: const InputDecoration(
                 labelText:
-                    'РџСЂРёРјРµСЂ РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)',
+                    'Пример предложения (необязательно)',
               ),
               maxLines: 2,
             ),
@@ -1603,7 +1603,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('РќРѕРІС‹Р№ СЃР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ'),
+      title: const Text('Новый словарный набор'),
       content: SizedBox(
         width: double.maxFinite,
         child: Form(
@@ -1614,7 +1614,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               TextFormField(
                 controller: _themeController,
                 decoration: const InputDecoration(
-                  labelText: 'РќР°Р·РІР°РЅРёРµ С‚РµРјС‹',
+                  labelText: 'Название темы',
                 ),
                 textInputAction: TextInputAction.next,
                 validator: _requiredValidator,
@@ -1623,7 +1623,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               TextFormField(
                 controller: _cefrController,
                 decoration: const InputDecoration(
-                  labelText: 'CEFR СѓСЂРѕРІРµРЅСЊ',
+                  labelText: 'CEFR уровень',
                 ),
                 textCapitalization: TextCapitalization.characters,
                 validator: _cefrLevelValidator,
@@ -1632,7 +1632,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'РЎР»РѕРІР° РЅР°Р±РѕСЂР°',
+                  'Слова набора',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1647,7 +1647,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
                 child: TextButton.icon(
                   onPressed: _addWordRow,
                   icon: const Icon(Icons.add),
-                  label: const Text('Р”РѕР±Р°РІРёС‚СЊ СЃР»РѕРІРѕ'),
+                  label: const Text('Добавить слово'),
                 ),
               ),
             ],
@@ -1657,7 +1657,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('РћС‚РјРµРЅР°'),
+          child: const Text('Отмена'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -1668,7 +1668,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                    'Р”РѕР±Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ СЃР»РѕРІРѕ.',
+                    'Добавьте хотя бы одно слово.',
                   ),
                 ),
               );
@@ -1683,7 +1683,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
               ),
             );
           },
-          child: const Text('РЎРѕР·РґР°С‚СЊ'),
+          child: const Text('Создать'),
         ),
       ],
     );
@@ -1762,7 +1762,7 @@ class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
   Widget _buildStudentList() {
     if (widget.students.isEmpty) {
       return const Center(
-        child: Text('РЎРїРёСЃРѕРє СЃС‚СѓРґРµРЅС‚РѕРІ РїРѕРєР° РїСѓСЃС‚.'),
+        child: Text('Список студентов пока пуст.'),
       );
     }
 
@@ -1790,20 +1790,20 @@ class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'РќР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹',
+                  labelText: 'Название группы',
                 ),
                 validator: _requiredValidator,
               ),
               const SizedBox(height: 16),
               Text(
-                'Р’С‹Р±РµСЂРёС‚Рµ СЃС‚СѓРґРµРЅС‚РѕРІ',
+                'Выберите студентов',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 4),
               const Text(
-                'Р•СЃР»Рё СЃС‚СѓРґРµРЅС‚ СѓР¶Рµ СЃРѕСЃС‚РѕРёС‚ РІ РіСЂСѓРїРїРµ, РІС‹Р±РѕСЂ РїРµСЂРµРЅРµСЃРµС‚ РµРіРѕ РІ СЌС‚Сѓ РіСЂСѓРїРїСѓ.',
+                'Если студент уже состоит в группе, выбор перенесет его в эту группу.',
               ),
               const SizedBox(height: 8),
               SizedBox(height: 280, child: _buildStudentList()),
@@ -1814,7 +1814,7 @@ class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('РћС‚РјРµРЅР°'),
+          child: const Text('Отмена'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -1904,7 +1904,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               DropdownButtonFormField<int>(
                 initialValue: _selectedSetId,
                 decoration: const InputDecoration(
-                  labelText: 'РЎР»РѕРІР°СЂРЅС‹Р№ РЅР°Р±РѕСЂ',
+                  labelText: 'Словарный набор',
                 ),
                 items: widget.sets
                     .map(
@@ -1926,16 +1926,16 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               TextFormField(
                 controller: _startDateController,
                 decoration: const InputDecoration(
-                  labelText: 'Р”Р°С‚Р° РЅР°С‡Р°Р»Р°',
-                  hintText: 'Р“Р“Р“Р“-РњРњ-Р”Р”',
+                  labelText: 'Дата начала',
+                  hintText: 'ГГГГ-ММ-ДД',
                 ),
                 validator: _optionalDateValidator,
               ),
               TextFormField(
                 controller: _deadlineController,
                 decoration: const InputDecoration(
-                  labelText: 'Р”РµРґР»Р°Р№РЅ',
-                  hintText: 'Р“Р“Р“Р“-РњРњ-Р”Р”',
+                  labelText: 'Дедлайн',
+                  hintText: 'ГГГГ-ММ-ДД',
                 ),
                 validator: (value) =>
                     _deadlineValidator(value, _startDateController.text),
@@ -1943,14 +1943,14 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               TextFormField(
                 controller: _attemptsController,
                 decoration: const InputDecoration(
-                  labelText: 'РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРїС‹С‚РѕРє',
+                  labelText: 'Количество попыток',
                 ),
                 keyboardType: TextInputType.number,
                 validator: _attemptsValidator,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('РџРµСЂРµРІРѕРґ РЅР° СЂСѓСЃСЃРєРёР№'),
+                title: const Text('Перевод на русский'),
                 value: _translateToRussian,
                 onChanged: (value) {
                   setState(() {
@@ -1961,7 +1961,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
-                  'Р”РѕСЃС‚СѓРїРЅРѕ РїРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°',
+                  'Доступно после дедлайна',
                 ),
                 value: _availableAfterEnd,
                 onChanged: (value) {
@@ -1977,7 +1977,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('РћС‚РјРµРЅР°'),
+          child: const Text('Отмена'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -2075,7 +2075,7 @@ class _TaskFormData {
 
 String? _requiredValidator(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'Р—Р°РїРѕР»РЅРёС‚Рµ РїРѕР»Рµ';
+    return 'Заполните поле';
   }
   return null;
 }
@@ -2089,7 +2089,7 @@ String? _cefrLevelValidator(String? value) {
   final level = value!.trim().toUpperCase();
   const allowedLevels = {'A1', 'A2', 'B1', 'B2', 'C1', 'C2'};
   if (!allowedLevels.contains(level)) {
-    return 'Р’РІРµРґРёС‚Рµ СѓСЂРѕРІРµРЅСЊ A1, A2, B1, B2, C1 РёР»Рё C2';
+    return 'Введите уровень A1, A2, B1, B2, C1 или C2';
   }
   return null;
 }
@@ -2100,7 +2100,7 @@ String? _optionalDateValidator(String? value) {
     return null;
   }
   if (_parseDate(text) == null) {
-    return 'Р’РІРµРґРёС‚Рµ РґР°С‚Сѓ РІ С„РѕСЂРјР°С‚Рµ Р“Р“Р“Р“-РњРњ-Р”Р”';
+    return 'Введите дату в формате ГГГГ-ММ-ДД';
   }
   return null;
 }
@@ -2114,7 +2114,7 @@ String? _deadlineValidator(String? value, String startDateValue) {
   final startDate = _parseDate(startDateValue);
   final deadline = _parseDate(value ?? '');
   if (startDate != null && deadline != null && deadline.isBefore(startDate)) {
-    return 'Р”РµРґР»Р°Р№РЅ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ СЂР°РЅСЊС€Рµ РґР°С‚С‹ РЅР°С‡Р°Р»Р°';
+    return 'Дедлайн не может быть раньше даты начала';
   }
   return null;
 }
@@ -2122,7 +2122,7 @@ String? _deadlineValidator(String? value, String startDateValue) {
 String? _attemptsValidator(String? value) {
   final attempts = int.tryParse(value?.trim() ?? '');
   if (attempts == null || attempts < 1) {
-    return 'Р’РІРµРґРёС‚Рµ С‡РёСЃР»Рѕ Р±РѕР»СЊС€Рµ 0';
+    return 'Введите число больше 0';
   }
   return null;
 }
@@ -2153,7 +2153,7 @@ DateTime? _parseDate(String value) {
 
 String _formatNullableDate(DateTime? date) {
   if (date == null) {
-    return 'РќРµ Р·Р°РґР°РЅРѕ';
+    return 'Не задано';
   }
   return _formatDate(date);
 }
@@ -2169,29 +2169,29 @@ String _formatDateForInput(DateTime? date) {
 
 String _taskSubtitle(AdminTaskListItem item) {
   final direction = item.translateToRussian
-      ? 'РЅР° СЂСѓСЃСЃРєРёР№'
-      : 'РЅР° Р°РЅРіР»РёР№СЃРєРёР№';
+      ? 'на русский'
+      : 'на английский';
   final startDate = item.startDate == null
-      ? 'Р±РµР· РґР°С‚С‹ РЅР°С‡Р°Р»Р°'
-      : 'СЃС‚Р°СЂС‚: ${_formatDate(item.startDate!)}';
+      ? 'без даты начала'
+      : 'старт: ${_formatDate(item.startDate!)}';
   final deadline = item.deadline == null
-      ? 'Р±РµР· РґРµРґР»Р°Р№РЅР°'
-      : 'РґРµРґР»Р°Р№РЅ: ${_formatDate(item.deadline!)}';
+      ? 'без дедлайна'
+      : 'дедлайн: ${_formatDate(item.deadline!)}';
 
-  return '$startDate В· $deadline В· РїРѕРїС‹С‚РѕРє: ${item.attemptsCount} В· РїРµСЂРµРІРѕРґ $direction';
+  return '$startDate · $deadline · попыток: ${item.attemptsCount} · перевод $direction';
 }
 
 String _taskStatus(AdminTaskListItem item) {
   final now = DateTime.now();
   if (item.deadline != null && item.deadline!.isBefore(now)) {
     return item.availableAfterEnd
-        ? 'Р”РѕСЃС‚СѓРїРЅРѕ РїРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР°'
-        : 'Р”РµРґР»Р°Р№РЅ РїСЂРѕС€С‘Р»';
+        ? 'Доступно после дедлайна'
+        : 'Дедлайн прошёл';
   }
   if (item.startDate != null && item.startDate!.isAfter(now)) {
-    return 'Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅРѕ';
+    return 'Запланировано';
   }
-  return 'РђРєС‚РёРІРЅРѕ';
+  return 'Активно';
 }
 
 String _formatDate(DateTime date) {

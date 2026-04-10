@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter *)",
+      "Bash(tasklist)",
+      "Bash(findstr *)",
+      "Bash(timeout *)",
+      "Bash(netstat *)",
+      "Bash(taskkill *)"
+    ]
+  },
+  "$version": 3
+}
