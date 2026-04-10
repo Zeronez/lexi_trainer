@@ -59,3 +59,52 @@ jobs:
           --dart-define=SUPABASE_URL=$SUPABASE_URL
           --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
         if: ${{ hashFiles('pubspec.yaml') != '' }}
+
+  security_regression:
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool/package_config.json
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Get dependencies
+        run: flutter pub get
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+
+      - name: Validate Supabase test secrets
+        if: ${{ hashFiles('pubspec.yaml') != '' }}
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing SUPABASE_URL (set as Secret or Variable)" && exit 1)
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || (echo "Missing SUPABASE_PUBLISHABLE_KEY (set as Secret or Variable)" && exit 1)
+
+      - name: Security and regression tests
+        run: >
+          flutter test
+          test/permissions/permission_matrix_test.dart
+          test/home/home_screen_role_navigation_test.dart
+          test/achievements/achievements_screen_test.dart
+          test/notifications/notifications_screen_test.dart
+          test/live/supabase_live_connectivity_test.dart
+          --dart-define=SUPABASE_URL=$SUPABASE_URL
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
+        if: ${{ hashFiles('pubspec.yaml') != '' }}

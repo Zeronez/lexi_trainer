@@ -62,14 +62,14 @@ Acceptance:
 
 Milestone 4 - Security & Data Integrity (Sprint D)
 Owner split:
-[ ] Backend-agent: exhaustive RLS matrix validation and fixes
-[ ] Backend-agent: constraints/index hardening and migration cleanup
-[ ] QA-agent: permission matrix test suite (admin/teacher/student)
-[ ] DevOps-agent: CI stage for extended security/regression suite
+[x] Backend-agent: exhaustive RLS matrix validation and fixes
+[x] Backend-agent: constraints/index hardening and migration cleanup
+[x] QA-agent: permission matrix test suite (admin/teacher/student)
+[x] DevOps-agent: CI stage for extended security/regression suite
 [ ] Git-agent: push Sprint D milestone
 Acceptance:
-[ ] Unauthorized access attempts denied across all critical tables
-[ ] Permission matrix documented and covered by tests
+[x] Unauthorized access attempts denied across all critical tables
+[x] Permission matrix documented and covered by tests
 [ ] Extended CI suite green on main
 
 Milestone 5 - Release Readiness (Sprint E)

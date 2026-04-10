@@ -100,6 +100,13 @@ Current sprint (this turn)
 [x] Frontend-agent: add notifications inbox screen with DB-backed repository flow
 [x] QA-agent: add/update widget regressions for achievements, notifications, and home navigation
 [x] Git-agent: commit + push Sprint C milestone to origin/main
+[x] Backend-agent: harden RLS for private/group/staff/admin boundaries (Sprint D)
+[x] Backend-agent: add constraints/index hardening migration for data integrity (Sprint D)
+[x] Backend-agent: add SQL permission matrix validation script for Sprint D
+[x] QA-agent: add permission matrix tests for UserRole and role-based Home navigation
+[x] DevOps-agent: add security_regression CI job in GitHub Actions
+[x] Conductor: align validation SQL with Supabase SQL Editor compatibility
+[ ] Git-agent: commit + push Sprint D milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -110,7 +117,10 @@ Last commit hash:
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
-- Sprint C migration must be applied in Supabase project before production run.
+- Sprint D migration must be applied in Supabase project before production run.
+
+
+
 
 
 

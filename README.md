@@ -37,14 +37,22 @@ CI is handled only through GitHub Actions.
 
 The workflow in `.github/workflows/flutter_ci.yml` runs on `push` and `pull_request` events for `main`. It installs Flutter, caches dependencies, then runs:
 
-- `flutter format --set-exit-if-changed --dry-run .`
+- `dart format --set-exit-if-changed --output=none .`
 - `flutter analyze`
 - `flutter test`
 
+The pipeline now also includes a separate `security_regression` job. It reuses the same Flutter setup and runs a tighter suite for permission-matrix and critical-path regressions:
+
+- `test/permissions/permission_matrix_test.dart`
+- `test/home/home_screen_role_navigation_test.dart`
+- `test/achievements/achievements_screen_test.dart`
+- `test/notifications/notifications_screen_test.dart`
+- `test/live/supabase_live_connectivity_test.dart`
+
 ## How CI Works
 
-The pipeline is designed to catch formatting issues, static analysis warnings, and test failures before changes are merged. This keeps the main branch stable and gives fast feedback during development.
-Widget tests initialize Supabase with real project credentials from GitHub Actions secrets.
+The pipeline is designed to catch formatting issues, static analysis warnings, permission regressions, and test failures before changes are merged. This keeps the main branch stable and gives fast feedback during development.
+Widget tests initialize Supabase with real project credentials from GitHub Actions secrets, and the security/regression job verifies both role-based UI behavior and a live Supabase REST handshake.
 
 ## Running With Supabase
 
