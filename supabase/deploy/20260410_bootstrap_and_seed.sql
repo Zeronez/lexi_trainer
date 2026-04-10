@@ -1209,13 +1209,13 @@ INSERT INTO public.achievements (name, description, condition_text)
 SELECT seed.name, seed.description, seed.condition_text
 FROM (
     VALUES
-        ('РџРµСЂРІРѕРµ Р·Р°РґР°РЅРёРµ', 'Р—Р°РІРµСЂС€РёС‚Рµ РїРµСЂРІРѕРµ СѓС‡РµР±РЅРѕРµ Р·Р°РґР°РЅРёРµ.', 'completed_tasks>=1'),
-        ('РџСЏС‚СЊ Р·Р°РґР°РЅРёР№', 'Р—Р°РІРµСЂС€РёС‚Рµ РїСЏС‚СЊ СѓС‡РµР±РЅС‹С… Р·Р°РґР°РЅРёР№.', 'completed_tasks>=5'),
-        ('Р”РµСЃСЏС‚СЊ РїРѕРїС‹С‚РѕРє', 'РћС‚РїСЂР°РІСЊС‚Рµ РґРµСЃСЏС‚СЊ РїРѕРїС‹С‚РѕРє РїРѕ Р·Р°РґР°РЅРёСЏРј.', 'attempts>=10'),
-        ('РџРµСЂРІС‹Рµ 10 РїСЂР°РІРёР»СЊРЅС‹С… РѕС‚РІРµС‚РѕРІ', 'Р”Р°Р№С‚Рµ 10 РїСЂР°РІРёР»СЊРЅС‹С… РѕС‚РІРµС‚РѕРІ.', 'correct_answers>=10'),
-        ('50 РїСЂР°РІРёР»СЊРЅС‹С… РѕС‚РІРµС‚РѕРІ', 'Р”Р°Р№С‚Рµ 50 РїСЂР°РІРёР»СЊРЅС‹С… РѕС‚РІРµС‚РѕРІ.', 'correct_answers>=50'),
-        ('РўРѕС‡РЅРѕСЃС‚СЊ 90%', 'Р”РѕСЃС‚РёРіРЅРёС‚Рµ С‚РѕС‡РЅРѕСЃС‚Рё 90% РјРёРЅРёРјСѓРј РїРѕСЃР»Рµ 20 РѕС‚РІРµС‚РѕРІ.', 'accuracy>=90_after_20_answers'),
-        ('РРґРµР°Р»СЊРЅР°СЏ РїРѕРїС‹С‚РєР°', 'Р—Р°РІРµСЂС€РёС‚Рµ РїРѕРїС‹С‚РєСѓ Р±РµР· РѕС€РёР±РѕРє.', 'perfect_attempts>=1')
+        ('Первое задание', 'Завершите первое учебное задание.', 'completed_tasks>=1'),
+        ('Пять заданий', 'Завершите пять учебных заданий.', 'completed_tasks>=5'),
+        ('Десять попыток', 'Отправьте десять попыток по заданиям.', 'attempts>=10'),
+        ('Первые 10 правильных ответов', 'Дайте 10 правильных ответов.', 'correct_answers>=10'),
+        ('50 правильных ответов', 'Дайте 50 правильных ответов.', 'correct_answers>=50'),
+        ('Точность 90%', 'Достигните точности 90% минимум после 20 ответов.', 'accuracy>=90_after_20_answers'),
+        ('Идеальная попытка', 'Завершите попытку без ошибок.', 'perfect_attempts>=1')
 ) AS seed(name, description, condition_text)
 WHERE NOT EXISTS (
     SELECT 1
@@ -1328,7 +1328,7 @@ BEGIN
         ORDER BY a.id
     LOOP
         INSERT INTO public.notifications (type, text)
-        VALUES ('achievement_awarded', 'РџРѕР»СѓС‡РµРЅРѕ РґРѕСЃС‚РёР¶РµРЅРёРµ: ' || v_achievement.name)
+        VALUES ('achievement_awarded', 'Получено достижение: ' || v_achievement.name)
         RETURNING id INTO v_notification_id;
 
         INSERT INTO public.notification_users_link (notification_id, user_id)

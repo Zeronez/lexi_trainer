@@ -123,7 +123,7 @@ BEGIN
         ORDER BY a.id
     LOOP
         INSERT INTO public.notifications (type, text)
-        VALUES ('achievement_awarded', 'РџРѕР»СѓС‡РµРЅРѕ РґРѕСЃС‚РёР¶РµРЅРёРµ: ' || v_achievement.name)
+        VALUES ('achievement_awarded', 'Получено достижение: ' || v_achievement.name)
         RETURNING id INTO v_notification_id;
 
         INSERT INTO public.notification_users_link (notification_id, user_id)
