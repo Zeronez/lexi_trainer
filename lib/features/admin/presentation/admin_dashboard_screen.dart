@@ -15,6 +15,7 @@ import 'package:lexi_trainer/features/admin/data/models/admin_vocabulary_word_in
 import 'package:lexi_trainer/features/admin/data/repositories/admin_repository.dart';
 import 'package:lexi_trainer/features/admin/presentation/admin_report_pdf_helper.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -946,9 +947,14 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
       );
 
       if (kIsWeb) {
-        throw UnsupportedError(
-          'Сохранение PDF на Web-варианте здесь не поддерживается.',
-        );
+        await Printing.sharePdf(bytes: bytes, filename: fileName);
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('PDF сформирован: $fileName')));
+        return;
       }
 
       final targetDirectory =
