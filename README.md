@@ -61,3 +61,39 @@ For release readiness, use the manual `Release Readiness` workflow in `.github/w
 Pass runtime configuration through `--dart-define` values:
 
 `flutter run --dart-define=SUPABASE_URL=<your_project_url> --dart-define=SUPABASE_PUBLISHABLE_KEY=<your_publishable_key>`
+
+## Быстрый ручной запуск
+
+В корне проекта есть `run_lexi_trainer.bat`.
+
+1. Дважды кликните файл или запустите его из `cmd`.
+2. Скрипт проверит наличие Flutter в `PATH`.
+3. Затем выполнит `flutter pub get`.
+4. После этого выберите режим:
+   - запуск в Chrome
+   - запуск для Windows
+   - запуск с `SUPABASE_URL` и `SUPABASE_PUBLISHABLE_KEY`
+   - `flutter analyze`
+   - `flutter test`
+
+## Quick Manual Start (.bat)
+
+Use `run_lexi_trainer.bat` from the project root to quickly run and test the app manually on Windows.
+
+The script does:
+- checks `flutter` in `PATH`
+- runs `flutter pub get`
+- offers menu options:
+  - run in Chrome
+  - run on Windows desktop
+  - run with `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`
+  - `flutter analyze`
+  - `flutter test`
+
+## Seed Data Pack
+
+For manual testing with realistic data, use:
+- `supabase/seeds/20260320_full_seed.sql`
+- guide: `docs/SUPABASE_SEED_20260320.md`
+
+Seed dataset uses baseline date `2026-03-20` and populates key tables with 6-24 records depending on context.

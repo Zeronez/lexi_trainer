@@ -117,6 +117,7 @@ Review expectations:
 
 ## Operational Notes
 
+- For local/staging test data, see `docs/SUPABASE_SEED_20260320.md` and `supabase/seeds/20260320_full_seed.sql`.
 - Never commit Supabase secrets. Use runtime environment variables and GitHub secrets only.
 - Keep SQL Editor manual fixes as small forward migrations when possible, so staging and production remain reproducible.
 - If a migration emits `WARNING` about skipped optional indexes, create a follow-up cleanup ticket before relying on uniqueness at the database level.
