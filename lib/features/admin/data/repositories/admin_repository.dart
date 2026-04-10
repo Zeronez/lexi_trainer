@@ -24,6 +24,14 @@ final adminStudentsProvider = FutureProvider<List<AdminStudentListItem>>((ref) {
   return ref.watch(adminRepositoryProvider).fetchStudents();
 });
 
+final adminUsersProvider = FutureProvider<List<AdminUserListItem>>((ref) {
+  return ref.watch(adminRepositoryProvider).fetchUsers();
+});
+
+final adminRolesProvider = FutureProvider<List<AdminRoleListItem>>((ref) {
+  return ref.watch(adminRepositoryProvider).fetchRoles();
+});
+
 final adminTasksProvider = FutureProvider<List<AdminTaskListItem>>((ref) {
   return ref.watch(adminRepositoryProvider).fetchTasks();
 });
@@ -40,7 +48,9 @@ class AdminRepository {
   Future<List<AdminVocabularySetListItem>> fetchVocabularySets() async {
     final rows = await _client
         .from('vocabulary_sets')
-        .select('id, theme_name, cefr_level, created_at, user_id')
+        .select(
+          'id, theme_name, cefr_level, created_at, user_id, users(username, email)',
+        )
         .order('created_at', ascending: false);
 
     return rows
@@ -62,6 +72,31 @@ class AdminRepository {
         .map(
           (row) =>
               AdminStudyGroupListItem.fromJson(Map<String, dynamic>.from(row)),
+        )
+        .toList();
+  }
+
+  Future<List<AdminUserListItem>> fetchUsers() async {
+    final rows = await _client
+        .from('users')
+        .select(
+          'id, username, email, registered_at, role_id, study_group_id, roles(name), study_groups(name)',
+        )
+        .order('username');
+
+    return rows
+        .map(
+          (row) => AdminUserListItem.fromJson(Map<String, dynamic>.from(row)),
+        )
+        .toList();
+  }
+
+  Future<List<AdminRoleListItem>> fetchRoles() async {
+    final rows = await _client.from('roles').select('id, name').order('name');
+
+    return rows
+        .map(
+          (row) => AdminRoleListItem.fromJson(Map<String, dynamic>.from(row)),
         )
         .toList();
   }
@@ -101,7 +136,7 @@ class AdminRepository {
     final row = await _client
         .from('vocabulary_sets')
         .select(
-          'id, theme_name, cefr_level, created_at, user_id, set_words_link(words(id, russian_word, english_translation, transcription, example_sentence))',
+          'id, theme_name, cefr_level, created_at, user_id, users(username, email), set_words_link(words(id, russian_word, english_translation, transcription, example_sentence))',
         )
         .eq('id', id)
         .single();
@@ -114,7 +149,12 @@ class AdminRepository {
         .from('study_groups')
         .select('id, name, created_at')
         .eq('id', id)
-        .single();
+        .maybeSingle();
+    if (groupRow == null) {
+      throw StateError(
+        'Группа #$id не найдена или недоступна для текущего пользователя.',
+      );
+    }
     final memberRows = await _client
         .from('users')
         .select('id, username, email')
@@ -269,6 +309,44 @@ class AdminRepository {
       }
       rethrow;
     }
+  }
+
+  Future<void> createUserProfile({
+    required String id,
+    required String username,
+    required String email,
+    required int roleId,
+    required int? studyGroupId,
+  }) async {
+    await _client.from('users').insert({
+      'id': id,
+      'username': username,
+      'email': email,
+      'role_id': roleId,
+      'study_group_id': studyGroupId,
+    });
+  }
+
+  Future<void> updateUserProfile({
+    required String id,
+    required String username,
+    required String email,
+    required int roleId,
+    required int? studyGroupId,
+  }) async {
+    await _client
+        .from('users')
+        .update({
+          'username': username,
+          'email': email,
+          'role_id': roleId,
+          'study_group_id': studyGroupId,
+        })
+        .eq('id', id);
+  }
+
+  Future<void> deleteUserProfile({required String id}) async {
+    await _client.from('users').delete().eq('id', id);
   }
 
   Future<void> updateVocabularySet({

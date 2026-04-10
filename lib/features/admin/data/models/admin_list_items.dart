@@ -5,6 +5,7 @@ class AdminVocabularySetListItem {
     required this.cefrLevel,
     required this.createdAt,
     required this.userId,
+    required this.authorName,
   });
 
   final int id;
@@ -12,14 +13,18 @@ class AdminVocabularySetListItem {
   final String cefrLevel;
   final DateTime createdAt;
   final String userId;
+  final String authorName;
 
   factory AdminVocabularySetListItem.fromJson(Map<String, dynamic> json) {
+    final author = _readNestedJson(json['users']);
+
     return AdminVocabularySetListItem(
       id: _readInt(json['id']),
       themeName: json['theme_name'] as String,
       cefrLevel: json['cefr_level'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       userId: json['user_id'] as String,
+      authorName: _displayNameFromUser(author) ?? json['user_id'] as String,
     );
   }
 }
@@ -31,6 +36,7 @@ class AdminVocabularySetDetails {
     required this.cefrLevel,
     required this.createdAt,
     required this.userId,
+    required this.authorName,
     required this.words,
   });
 
@@ -39,10 +45,12 @@ class AdminVocabularySetDetails {
   final String cefrLevel;
   final DateTime createdAt;
   final String userId;
+  final String authorName;
   final List<AdminVocabularyWordListItem> words;
 
   factory AdminVocabularySetDetails.fromJson(Map<String, dynamic> json) {
     final links = json['set_words_link'];
+    final author = _readNestedJson(json['users']);
 
     return AdminVocabularySetDetails(
       id: _readInt(json['id']),
@@ -50,6 +58,7 @@ class AdminVocabularySetDetails {
       cefrLevel: json['cefr_level'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       userId: json['user_id'] as String,
+      authorName: _displayNameFromUser(author) ?? json['user_id'] as String,
       words: links is List
           ? links
                 .map((link) {
@@ -226,4 +235,29 @@ int _readInt(Object? value) {
   }
 
   throw FormatException('Не удалось прочитать числовое значение.');
+}
+
+Map<String, dynamic>? _readNestedJson(Object? value) {
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return null;
+}
+
+String? _displayNameFromUser(Map<String, dynamic>? user) {
+  if (user == null) {
+    return null;
+  }
+
+  final username = (user['username'] as String?)?.trim();
+  if (username != null && username.isNotEmpty) {
+    return username;
+  }
+
+  final email = (user['email'] as String?)?.trim();
+  if (email != null && email.isNotEmpty) {
+    return email;
+  }
+
+  return null;
 }

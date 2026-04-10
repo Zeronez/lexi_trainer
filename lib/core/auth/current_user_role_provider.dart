@@ -8,13 +8,6 @@ final currentUserRoleProvider = FutureProvider<UserRole>((ref) async {
     return UserRole.unknown;
   }
 
-  final metadataRole = UserRole.fromValue(
-    user.userMetadata?['role'] as String?,
-  );
-  if (metadataRole != UserRole.unknown) {
-    return metadataRole;
-  }
-
   try {
     final profile = await Supabase.instance.client
         .from('users')
@@ -28,6 +21,13 @@ final currentUserRoleProvider = FutureProvider<UserRole>((ref) async {
     }
   } catch (_) {
     // Keep non-blocking fallback for UI.
+  }
+
+  final metadataRole = UserRole.fromValue(
+    user.userMetadata?['role'] as String?,
+  );
+  if (metadataRole != UserRole.unknown) {
+    return metadataRole;
   }
 
   return UserRole.student;

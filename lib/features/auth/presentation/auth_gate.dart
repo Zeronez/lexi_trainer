@@ -106,30 +106,33 @@ class _AuthGateState extends State<AuthGate> {
     Session session, {
     required bool allowNetworkLookup,
   }) async {
+    if (allowNetworkLookup) {
+      try {
+        final profile = await Supabase.instance.client
+            .from('users')
+            .select('roles(name)')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+        final rolesPayload = profile?['roles'];
+        if (rolesPayload is Map<String, dynamic>) {
+          final databaseRole = UserRole.fromValue(
+            rolesPayload['name'] as String?,
+          );
+          if (databaseRole != UserRole.unknown) {
+            return databaseRole;
+          }
+        }
+      } catch (_) {
+        // Keep the gate non-blocking if the role lookup fails.
+      }
+    }
+
     final metadataRole = UserRole.fromValue(
       session.user.userMetadata?['role'] as String?,
     );
     if (metadataRole != UserRole.unknown) {
       return metadataRole;
-    }
-
-    if (!allowNetworkLookup) {
-      return UserRole.student;
-    }
-
-    try {
-      final profile = await Supabase.instance.client
-          .from('users')
-          .select('roles(name)')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-      final rolesPayload = profile?['roles'];
-      if (rolesPayload is Map<String, dynamic>) {
-        return UserRole.fromValue(rolesPayload['name'] as String?);
-      }
-    } catch (_) {
-      // Keep the gate non-blocking if the role lookup fails.
     }
 
     return UserRole.student;

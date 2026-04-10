@@ -43,6 +43,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     ref.invalidate(adminStudentsProvider);
   }
 
+  void _refreshUsers() {
+    ref.invalidate(adminUsersProvider);
+  }
+
+  void _refreshRoles() {
+    ref.invalidate(adminRolesProvider);
+  }
+
   Future<void> _showReport() async {
     ref.invalidate(adminReportMetricsProvider);
     await showDialog<void>(
@@ -70,9 +78,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         return;
       }
       _refreshSets();
-      _showMessage(
-        'Словарный набор со словами создан.',
-      );
+      _showMessage('Словарный набор со словами создан.');
     } catch (error) {
       _showError(error);
     }
@@ -112,6 +118,48 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
   }
 
+  Future<void> _createUser() async {
+    final refs = await _loadUserFormRefs();
+    if (!mounted || refs == null) {
+      return;
+    }
+    if (refs.roles.isEmpty) {
+      _showMessage('Сначала добавьте роли в таблицу roles.');
+      return;
+    }
+
+    final data = await showDialog<_UserFormData>(
+      context: context,
+      builder: (context) => _UserFormDialog(
+        title: 'Новый пользователь',
+        actionLabel: 'Создать',
+        roles: refs.roles,
+        groups: refs.groups,
+      ),
+    );
+    if (data == null) {
+      return;
+    }
+
+    try {
+      await _repository.createUserProfile(
+        id: data.id!,
+        username: data.username,
+        email: data.email,
+        roleId: data.roleId,
+        studyGroupId: data.studyGroupId,
+      );
+      if (!mounted) {
+        return;
+      }
+      _refreshUsers();
+      _refreshStudents();
+      _showMessage('Профиль пользователя создан.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
   Future<void> _createTask() async {
     final sets = await _loadVocabularySetsForTaskDialog();
     if (!mounted) {
@@ -121,9 +169,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     if (sets.isEmpty) {
-      _showMessage(
-        'Сначала создайте словарный набор.',
-      );
+      _showMessage('Сначала создайте словарный набор.');
       return;
     }
 
@@ -202,6 +248,93 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         }
         return null;
       }
+    }
+  }
+
+  Future<_UserFormRefs?> _loadUserFormRefs() async {
+    try {
+      final roles = await ref.read(adminRolesProvider.future);
+      final groups = await ref.read(adminStudyGroupsProvider.future);
+      return _UserFormRefs(roles: roles, groups: groups);
+    } catch (_) {
+      _refreshRoles();
+      _refreshGroups();
+      try {
+        final roles = await ref.read(adminRolesProvider.future);
+        final groups = await ref.read(adminStudyGroupsProvider.future);
+        return _UserFormRefs(roles: roles, groups: groups);
+      } catch (error) {
+        if (mounted) {
+          _showLoadError(error);
+        }
+        return null;
+      }
+    }
+  }
+
+  Future<void> _editUser(AdminUserListItem item) async {
+    final refs = await _loadUserFormRefs();
+    if (!mounted || refs == null) {
+      return;
+    }
+    if (refs.roles.isEmpty) {
+      _showMessage('Сначала добавьте роли в таблицу roles.');
+      return;
+    }
+
+    final data = await showDialog<_UserFormData>(
+      context: context,
+      builder: (context) => _UserFormDialog(
+        title: 'Редактировать пользователя',
+        actionLabel: 'Сохранить',
+        roles: refs.roles,
+        groups: refs.groups,
+        initialItem: item,
+      ),
+    );
+    if (data == null) {
+      return;
+    }
+
+    try {
+      await _repository.updateUserProfile(
+        id: item.id,
+        username: data.username,
+        email: data.email,
+        roleId: data.roleId,
+        studyGroupId: data.studyGroupId,
+      );
+      if (!mounted) {
+        return;
+      }
+      _refreshUsers();
+      _refreshStudents();
+      _showMessage('Профиль пользователя обновлен.');
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
+  Future<void> _deleteUser(AdminUserListItem item) async {
+    final confirmed = await _confirmDelete(
+      title: 'Удалить профиль пользователя?',
+      message:
+          'Профиль "${item.displayName}" будет удален из public.users. Auth-аккаунт при этом не удаляется.',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await _repository.deleteUserProfile(id: item.id);
+      if (!mounted) {
+        return;
+      }
+      _refreshUsers();
+      _refreshStudents();
+      _showMessage('Профиль пользователя удален.');
+    } catch (error) {
+      _showError(error);
     }
   }
 
@@ -357,9 +490,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     if (sets.isEmpty) {
-      _showMessage(
-        'Сначала создайте словарный набор.',
-      );
+      _showMessage('Сначала создайте словарный набор.');
       return;
     }
 
@@ -399,8 +530,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Future<void> _deleteTask(AdminTaskListItem item) async {
     final confirmed = await _confirmDelete(
       title: 'Удалить задание?',
-      message:
-          'Задание по набору "${item.vocabularySetName}" будет удалено.',
+      message: 'Задание по набору "${item.vocabularySetName}" будет удалено.',
     );
     if (!confirmed) {
       return;
@@ -453,9 +583,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Не удалось сохранить: $error')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Не удалось сохранить: $error')));
   }
 
   void _showLoadError(Object error) {
@@ -463,11 +593,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Не удалось загрузить данные: $error',
-        ),
-      ),
+      SnackBar(content: Text('Не удалось загрузить данные: $error')),
     );
   }
 
@@ -504,13 +630,34 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         final panelTitle = isAdmin
             ? '\u041f\u0430\u043d\u0435\u043b\u044c \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430'
             : '\u041f\u0430\u043d\u0435\u043b\u044c \u043f\u0440\u0435\u043f\u043e\u0434\u0430\u0432\u0430\u0442\u0435\u043b\u044f';
-        final groups = isAdmin ? ref.watch(adminStudyGroupsProvider) : null;
+        final users = isAdmin ? ref.watch(adminUsersProvider) : null;
+        final groups = ref.watch(adminStudyGroupsProvider);
         final tabs = <Tab>[
+          if (isAdmin) const Tab(text: 'Пользователи'),
+          if (isAdmin) const Tab(text: 'Группы'),
           const Tab(text: '\u041a\u043e\u043d\u0442\u0435\u043d\u0442'),
-          if (isAdmin) const Tab(text: '\u0413\u0440\u0443\u043f\u043f\u044b'),
           const Tab(text: '\u0417\u0430\u0434\u0430\u043d\u0438\u044f'),
+          if (!isAdmin) const Tab(text: 'Группы'),
         ];
         final tabViews = <Widget>[
+          if (isAdmin)
+            _UserManagementTab(
+              items: users!,
+              onRefresh: _refreshUsers,
+              onCreate: _createUser,
+              onEdit: _editUser,
+              onDelete: _deleteUser,
+            ),
+          if (isAdmin)
+            _GroupManagementTab(
+              items: groups,
+              onRefresh: _refreshGroups,
+              onCreate: _createGroup,
+              onView: _viewGroup,
+              onEdit: _editGroup,
+              onDelete: _deleteGroup,
+              readOnly: false,
+            ),
           _ContentManagementTab(
             items: sets,
             onRefresh: _refreshSets,
@@ -519,15 +666,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             onEdit: _editSet,
             onDelete: _deleteSet,
           ),
-          if (isAdmin)
-            _GroupManagementTab(
-              items: groups!,
-              onRefresh: _refreshGroups,
-              onCreate: _createGroup,
-              onView: _viewGroup,
-              onEdit: _editGroup,
-              onDelete: _deleteGroup,
-            ),
           _TaskManagementTab(
             items: tasks,
             onRefresh: _refreshTasks,
@@ -536,6 +674,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             onEdit: _editTask,
             onDelete: _deleteTask,
           ),
+          if (!isAdmin)
+            _GroupManagementTab(
+              items: groups,
+              onRefresh: _refreshGroups,
+              onView: _viewGroup,
+              readOnly: true,
+            ),
         ];
 
         return DefaultTabController(
@@ -649,9 +794,46 @@ class _ContentManagementTab extends StatelessWidget {
       itemBuilder: (item) => _AdminItemCard(
         title: 'Тема: ${item.themeName}',
         subtitle:
-            'CEFR ${item.cefrLevel} · создано: ${_formatDate(item.createdAt)}',
+            'CEFR ${item.cefrLevel} · автор: ${item.authorName} · создано: ${_formatDate(item.createdAt)}',
         status: 'Доступно',
         onView: () => onView(item),
+        onEdit: () => onEdit(item),
+        onDelete: () => onDelete(item),
+      ),
+    );
+  }
+}
+
+class _UserManagementTab extends StatelessWidget {
+  const _UserManagementTab({
+    required this.items,
+    required this.onRefresh,
+    required this.onCreate,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final AsyncValue<List<AdminUserListItem>> items;
+  final VoidCallback onRefresh;
+  final VoidCallback onCreate;
+  final ValueChanged<AdminUserListItem> onEdit;
+  final ValueChanged<AdminUserListItem> onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return _TabLayout<AdminUserListItem>(
+      title: 'Пользователи',
+      description:
+          'Создавайте профили для существующих auth UUID, меняйте роли и учебные группы.',
+      actionText: 'Добавить пользователя',
+      emptyText: 'Пользователей пока нет.',
+      items: items,
+      onRefresh: onRefresh,
+      onCreate: onCreate,
+      itemBuilder: (item) => _AdminItemCard(
+        title: item.displayName,
+        subtitle: item.subtitle,
+        status: item.roleLabel,
         onEdit: () => onEdit(item),
         onDelete: () => onDelete(item),
       ),
@@ -663,26 +845,29 @@ class _GroupManagementTab extends StatelessWidget {
   const _GroupManagementTab({
     required this.items,
     required this.onRefresh,
-    required this.onCreate,
     required this.onView,
-    required this.onEdit,
-    required this.onDelete,
+    this.onCreate,
+    this.onEdit,
+    this.onDelete,
+    this.readOnly = false,
   });
 
   final AsyncValue<List<AdminStudyGroupListItem>> items;
   final VoidCallback onRefresh;
-  final VoidCallback onCreate;
+  final VoidCallback? onCreate;
   final ValueChanged<AdminStudyGroupListItem> onView;
-  final ValueChanged<AdminStudyGroupListItem> onEdit;
-  final ValueChanged<AdminStudyGroupListItem> onDelete;
+  final ValueChanged<AdminStudyGroupListItem>? onEdit;
+  final ValueChanged<AdminStudyGroupListItem>? onDelete;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     return _TabLayout<AdminStudyGroupListItem>(
       title: 'Управление учебными группами',
-      description:
-          'Создавайте учебные группы для дальнейшего назначения студентов и преподавателей.',
-      actionText: 'Создать группу',
+      description: readOnly
+          ? 'Просматривайте учебные группы и состав студентов.'
+          : 'Создавайте учебные группы для дальнейшего назначения студентов и преподавателей.',
+      actionText: readOnly ? null : 'Создать группу',
       emptyText: 'Учебных групп пока нет.',
       items: items,
       onRefresh: onRefresh,
@@ -692,8 +877,8 @@ class _GroupManagementTab extends StatelessWidget {
         subtitle: 'Создана: ${_formatDate(item.createdAt)}',
         status: 'Активна',
         onView: () => onView(item),
-        onEdit: () => onEdit(item),
-        onDelete: () => onDelete(item),
+        onEdit: onEdit == null ? null : () => onEdit!(item),
+        onDelete: onDelete == null ? null : () => onDelete!(item),
       ),
     );
   }
@@ -847,22 +1032,19 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _ReportMetricCard(
-                title:
-                    'Количество доступных словарных наборов',
+                title: 'Количество доступных словарных наборов',
                 value: metrics.vocabularySetCount.toString(),
                 icon: Icons.menu_book_outlined,
                 accentColor: Theme.of(context).colorScheme.primary,
               ),
               _ReportMetricCard(
-                title:
-                    'Количество назначенных заданий',
+                title: 'Количество назначенных заданий',
                 value: metrics.taskCount.toString(),
                 icon: Icons.assignment_outlined,
                 accentColor: Theme.of(context).colorScheme.tertiary,
               ),
               _ReportMetricCard(
-                title:
-                    'Количество выполненных заданий',
+                title: 'Количество выполненных заданий',
                 value: metrics.completedTaskCount.toString(),
                 icon: Icons.check_circle_outline,
                 accentColor: AppColors.success,
@@ -874,8 +1056,7 @@ class _ReportDialogState extends ConsumerState<_ReportDialog> {
                 accentColor: Theme.of(context).colorScheme.secondary,
               ),
               _ReportMetricCard(
-                title:
-                    'Количество активных студентов',
+                title: 'Количество активных студентов',
                 value: metrics.activeStudentCount.toString(),
                 icon: Icons.groups_outlined,
                 accentColor: Theme.of(context).colorScheme.primary,
@@ -992,11 +1173,8 @@ class _VocabularySetDetailsDialog extends StatelessWidget {
           children: [
             _DetailRow(label: 'Тема', value: details.themeName),
             _DetailRow(label: 'CEFR', value: details.cefrLevel),
-            _DetailRow(
-              label: 'Создан',
-              value: _formatDate(details.createdAt),
-            ),
-            _DetailRow(label: 'Автор', value: details.userId),
+            _DetailRow(label: 'Создан', value: _formatDate(details.createdAt)),
+            _DetailRow(label: 'Автор', value: details.authorName),
             const SizedBox(height: 16),
             Text(
               'Слова',
@@ -1056,10 +1234,7 @@ class _StudyGroupDetailsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _DetailRow(label: 'Название', value: details.name),
-            _DetailRow(
-              label: 'Создана',
-              value: _formatDate(details.createdAt),
-            ),
+            _DetailRow(label: 'Создана', value: _formatDate(details.createdAt)),
             const SizedBox(height: 16),
             Text(
               'Участники',
@@ -1107,10 +1282,7 @@ class _TaskDetailsDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _DetailRow(
-              label: 'Словарный набор',
-              value: item.vocabularySetName,
-            ),
+            _DetailRow(label: 'Словарный набор', value: item.vocabularySetName),
             _DetailRow(
               label: 'Дата начала',
               value: _formatNullableDate(item.startDate),
@@ -1131,9 +1303,7 @@ class _TaskDetailsDialog extends StatelessWidget {
             ),
             _DetailRow(
               label: 'После дедлайна',
-              value: item.availableAfterEnd
-                  ? 'Доступно'
-                  : 'Недоступно',
+              value: item.availableAfterEnd ? 'Доступно' : 'Недоступно',
             ),
           ],
         ),
@@ -1179,9 +1349,7 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        'Редактировать словарный набор',
-      ),
+      title: const Text('Редактировать словарный набор'),
       content: Form(
         key: _formKey,
         child: Column(
@@ -1189,17 +1357,13 @@ class _SetMetadataDialogState extends State<_SetMetadataDialog> {
           children: [
             TextFormField(
               controller: _themeController,
-              decoration: const InputDecoration(
-                labelText: 'Название темы',
-              ),
+              decoration: const InputDecoration(labelText: 'Название темы'),
               validator: _requiredValidator,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _cefrController,
-              decoration: const InputDecoration(
-                labelText: 'CEFR уровень',
-              ),
+              decoration: const InputDecoration(labelText: 'CEFR уровень'),
               textCapitalization: TextCapitalization.characters,
               validator: _cefrLevelValidator,
             ),
@@ -1261,21 +1425,21 @@ class _TabLayout<T> extends StatelessWidget {
   const _TabLayout({
     required this.title,
     required this.description,
-    required this.actionText,
     required this.emptyText,
     required this.items,
     required this.onRefresh,
-    required this.onCreate,
     required this.itemBuilder,
+    this.actionText,
+    this.onCreate,
   });
 
   final String title;
   final String description;
-  final String actionText;
+  final String? actionText;
   final String emptyText;
   final AsyncValue<List<T>> items;
   final VoidCallback onRefresh;
-  final VoidCallback onCreate;
+  final VoidCallback? onCreate;
   final Widget Function(T item) itemBuilder;
 
   @override
@@ -1296,7 +1460,8 @@ class _TabLayout<T> extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            ElevatedButton(onPressed: onCreate, child: Text(actionText)),
+            if (actionText != null && onCreate != null)
+              ElevatedButton(onPressed: onCreate, child: Text(actionText!)),
             OutlinedButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh),
@@ -1330,28 +1495,28 @@ class _AdminItemCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.status,
-    required this.onView,
-    required this.onEdit,
-    required this.onDelete,
+    this.onView,
+    this.onEdit,
+    this.onDelete,
   });
 
   final String title;
   final String subtitle;
   final String status;
-  final VoidCallback onView;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onView;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   void _handleAction(_AdminCardAction action) {
     switch (action) {
       case _AdminCardAction.view:
-        onView();
+        onView?.call();
         break;
       case _AdminCardAction.edit:
-        onEdit();
+        onEdit?.call();
         break;
       case _AdminCardAction.delete:
-        onDelete();
+        onDelete?.call();
         break;
     }
   }
@@ -1376,24 +1541,28 @@ class _AdminItemCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                PopupMenuButton<_AdminCardAction>(
-                  tooltip: 'Действия',
-                  onSelected: _handleAction,
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: _AdminCardAction.view,
-                      child: Text('Просмотр'),
-                    ),
-                    PopupMenuItem(
-                      value: _AdminCardAction.edit,
-                      child: Text('Редактировать'),
-                    ),
-                    PopupMenuItem(
-                      value: _AdminCardAction.delete,
-                      child: Text('Удалить'),
-                    ),
-                  ],
-                ),
+                if (onView != null || onEdit != null || onDelete != null)
+                  PopupMenuButton<_AdminCardAction>(
+                    tooltip: 'Действия',
+                    onSelected: _handleAction,
+                    itemBuilder: (context) => [
+                      if (onView != null)
+                        const PopupMenuItem(
+                          value: _AdminCardAction.view,
+                          child: Text('Просмотр'),
+                        ),
+                      if (onEdit != null)
+                        const PopupMenuItem(
+                          value: _AdminCardAction.edit,
+                          child: Text('Редактировать'),
+                        ),
+                      if (onDelete != null)
+                        const PopupMenuItem(
+                          value: _AdminCardAction.delete,
+                          child: Text('Удалить'),
+                        ),
+                    ],
+                  ),
               ],
             ),
             const SizedBox(height: 4),
@@ -1455,10 +1624,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$error'),
             const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('Повторить'),
-            ),
+            OutlinedButton(onPressed: onRetry, child: const Text('Повторить')),
           ],
         ),
       ),
@@ -1560,9 +1726,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             const SizedBox(height: 12),
             TextFormField(
               controller: controllers.russianController,
-              decoration: const InputDecoration(
-                labelText: 'Русское слово',
-              ),
+              decoration: const InputDecoration(labelText: 'Русское слово'),
               textInputAction: TextInputAction.next,
               validator: _requiredValidator,
             ),
@@ -1579,8 +1743,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.transcriptionController,
               decoration: const InputDecoration(
-                labelText:
-                    'Транскрипция (необязательно)',
+                labelText: 'Транскрипция (необязательно)',
               ),
               textInputAction: TextInputAction.next,
             ),
@@ -1588,8 +1751,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             TextFormField(
               controller: controllers.exampleController,
               decoration: const InputDecoration(
-                labelText:
-                    'Пример предложения (необязательно)',
+                labelText: 'Пример предложения (необязательно)',
               ),
               maxLines: 2,
             ),
@@ -1613,18 +1775,14 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             children: [
               TextFormField(
                 controller: _themeController,
-                decoration: const InputDecoration(
-                  labelText: 'Название темы',
-                ),
+                decoration: const InputDecoration(labelText: 'Название темы'),
                 textInputAction: TextInputAction.next,
                 validator: _requiredValidator,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cefrController,
-                decoration: const InputDecoration(
-                  labelText: 'CEFR уровень',
-                ),
+                decoration: const InputDecoration(labelText: 'CEFR уровень'),
                 textCapitalization: TextCapitalization.characters,
                 validator: _cefrLevelValidator,
               ),
@@ -1666,11 +1824,7 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             }
             if (_wordRows.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Добавьте хотя бы одно слово.',
-                  ),
-                ),
+                const SnackBar(content: Text('Добавьте хотя бы одно слово.')),
               );
               return;
             }
@@ -1684,6 +1838,179 @@ class _CreateSetDialogState extends State<_CreateSetDialog> {
             );
           },
           child: const Text('Создать'),
+        ),
+      ],
+    );
+  }
+}
+
+class _UserFormDialog extends StatefulWidget {
+  const _UserFormDialog({
+    required this.title,
+    required this.actionLabel,
+    required this.roles,
+    required this.groups,
+    this.initialItem,
+  });
+
+  final String title;
+  final String actionLabel;
+  final List<AdminRoleListItem> roles;
+  final List<AdminStudyGroupListItem> groups;
+  final AdminUserListItem? initialItem;
+
+  @override
+  State<_UserFormDialog> createState() => _UserFormDialogState();
+}
+
+class _UserFormDialogState extends State<_UserFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _idController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _emailController;
+  late int _selectedRoleId;
+  int? _selectedGroupId;
+
+  bool get _isEditing => widget.initialItem != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialItem = widget.initialItem;
+    _idController = TextEditingController(text: initialItem?.id ?? '');
+    _usernameController = TextEditingController(
+      text: initialItem?.username ?? '',
+    );
+    _emailController = TextEditingController(text: initialItem?.email ?? '');
+    final initialRoleId = initialItem?.roleId;
+    _selectedRoleId =
+        initialRoleId != null &&
+            widget.roles.any((role) => role.id == initialRoleId)
+        ? initialRoleId
+        : widget.roles.first.id;
+    final initialGroupId = initialItem?.studyGroupId;
+    _selectedGroupId =
+        initialGroupId != null &&
+            widget.groups.any((group) => group.id == initialGroupId)
+        ? initialGroupId
+        : null;
+  }
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      scrollable: true,
+      title: Text(widget.title),
+      content: SizedBox(
+        width: 520,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!_isEditing) ...[
+                const Text(
+                  'UUID должен уже существовать в Supabase Auth. Клиентский ключ не может создавать auth-аккаунты.',
+                ),
+                const SizedBox(height: 12),
+              ],
+              TextFormField(
+                controller: _idController,
+                enabled: !_isEditing,
+                decoration: const InputDecoration(labelText: 'Auth user UUID'),
+                validator: _uuidValidator,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Имя пользователя',
+                ),
+                textInputAction: TextInputAction.next,
+                validator: _requiredValidator,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Эл. почта'),
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                validator: _emailValidator,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: _selectedRoleId,
+                decoration: const InputDecoration(labelText: 'Роль'),
+                items: widget.roles
+                    .map(
+                      (role) => DropdownMenuItem<int>(
+                        value: role.id,
+                        child: Text(role.label),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() => _selectedRoleId = value);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: _selectedGroupId ?? 0,
+                decoration: const InputDecoration(labelText: 'Учебная группа'),
+                items: [
+                  const DropdownMenuItem<int>(
+                    value: 0,
+                    child: Text('Без группы'),
+                  ),
+                  ...widget.groups.map(
+                    (group) => DropdownMenuItem<int>(
+                      value: group.id,
+                      child: Text(group.name),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedGroupId = value == 0 ? null : value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Отмена'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (!_formKey.currentState!.validate()) {
+              return;
+            }
+
+            Navigator.of(context).pop(
+              _UserFormData(
+                id: _isEditing ? null : _idController.text.trim(),
+                username: _usernameController.text.trim(),
+                email: _emailController.text.trim(),
+                roleId: _selectedRoleId,
+                studyGroupId: _selectedGroupId,
+              ),
+            );
+          },
+          child: Text(widget.actionLabel),
         ),
       ],
     );
@@ -1761,9 +2088,7 @@ class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
 
   Widget _buildStudentList() {
     if (widget.students.isEmpty) {
-      return const Center(
-        child: Text('Список студентов пока пуст.'),
-      );
+      return const Center(child: Text('Список студентов пока пуст.'));
     }
 
     return ListView.separated(
@@ -1789,9 +2114,7 @@ class _StudyGroupFormDialogState extends State<_StudyGroupFormDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Название группы',
-                ),
+                decoration: const InputDecoration(labelText: 'Название группы'),
                 validator: _requiredValidator,
               ),
               const SizedBox(height: 16),
@@ -1903,9 +2226,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
             children: [
               DropdownButtonFormField<int>(
                 initialValue: _selectedSetId,
-                decoration: const InputDecoration(
-                  labelText: 'Словарный набор',
-                ),
+                decoration: const InputDecoration(labelText: 'Словарный набор'),
                 items: widget.sets
                     .map(
                       (set) => DropdownMenuItem<int>(
@@ -1960,9 +2281,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Доступно после дедлайна',
-                ),
+                title: const Text('Доступно после дедлайна'),
                 value: _availableAfterEnd,
                 onChanged: (value) {
                   setState(() {
@@ -2038,6 +2357,29 @@ class _CreateSetData {
   final List<AdminVocabularyWordInput> words;
 }
 
+class _UserFormRefs {
+  const _UserFormRefs({required this.roles, required this.groups});
+
+  final List<AdminRoleListItem> roles;
+  final List<AdminStudyGroupListItem> groups;
+}
+
+class _UserFormData {
+  const _UserFormData({
+    required this.id,
+    required this.username,
+    required this.email,
+    required this.roleId,
+    required this.studyGroupId,
+  });
+
+  final String? id;
+  final String username;
+  final String email;
+  final int roleId;
+  final int? studyGroupId;
+}
+
 class _SetMetadataFormData {
   const _SetMetadataFormData({
     required this.themeName,
@@ -2076,6 +2418,35 @@ class _TaskFormData {
 String? _requiredValidator(String? value) {
   if (value == null || value.trim().isEmpty) {
     return 'Заполните поле';
+  }
+  return null;
+}
+
+String? _emailValidator(String? value) {
+  final requiredError = _requiredValidator(value);
+  if (requiredError != null) {
+    return requiredError;
+  }
+
+  final email = value!.trim();
+  if (!email.contains('@')) {
+    return 'Введите корректный адрес.';
+  }
+  return null;
+}
+
+String? _uuidValidator(String? value) {
+  final requiredError = _requiredValidator(value);
+  if (requiredError != null) {
+    return requiredError;
+  }
+
+  final uuid = value!.trim();
+  final isUuid = RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  ).hasMatch(uuid);
+  if (!isUuid) {
+    return 'Введите UUID в формате xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
   }
   return null;
 }
@@ -2168,9 +2539,7 @@ String _formatDateForInput(DateTime? date) {
 }
 
 String _taskSubtitle(AdminTaskListItem item) {
-  final direction = item.translateToRussian
-      ? 'на русский'
-      : 'на английский';
+  final direction = item.translateToRussian ? 'на русский' : 'на английский';
   final startDate = item.startDate == null
       ? 'без даты начала'
       : 'старт: ${_formatDate(item.startDate!)}';

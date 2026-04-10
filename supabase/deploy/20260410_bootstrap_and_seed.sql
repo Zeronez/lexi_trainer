@@ -565,9 +565,14 @@ FOR SELECT TO authenticated
 USING (true);
 
 DROP POLICY IF EXISTS study_groups_select_own_or_admin ON public.study_groups;
-CREATE POLICY study_groups_select_own_or_admin ON public.study_groups
+DROP POLICY IF EXISTS study_groups_select_staff_read ON public.study_groups;
+CREATE POLICY study_groups_select_staff_read ON public.study_groups
 FOR SELECT TO authenticated
-USING (public.is_current_user_admin() OR id = public.current_user_group_id());
+USING (
+    public.is_current_user_admin()
+    OR public.current_user_role() = 'teacher'
+    OR id = public.current_user_group_id()
+);
 
 DROP POLICY IF EXISTS study_groups_manage_admin ON public.study_groups;
 CREATE POLICY study_groups_manage_admin ON public.study_groups
@@ -1674,6 +1679,7 @@ WITH CHECK (public.is_current_user_admin());
 DROP POLICY IF EXISTS users_update_managed ON public.users;
 DROP POLICY IF EXISTS users_update_self_profile ON public.users;
 DROP POLICY IF EXISTS users_update_staff ON public.users;
+DROP POLICY IF EXISTS users_delete_admin ON public.users;
 CREATE POLICY users_update_self_profile ON public.users
 FOR UPDATE TO authenticated
 USING (id = auth.uid())
@@ -1683,6 +1689,13 @@ CREATE POLICY users_update_staff ON public.users
 FOR UPDATE TO authenticated
 USING (public.can_manage_user_as_staff(id))
 WITH CHECK (public.can_manage_user_as_staff(id));
+
+CREATE POLICY users_delete_admin ON public.users
+FOR DELETE TO authenticated
+USING (
+    public.is_current_user_admin()
+    AND id <> auth.uid()
+);
 
 DROP POLICY IF EXISTS vocabulary_sets_insert_managed ON public.vocabulary_sets;
 DROP POLICY IF EXISTS vocabulary_sets_update_managed ON public.vocabulary_sets;
