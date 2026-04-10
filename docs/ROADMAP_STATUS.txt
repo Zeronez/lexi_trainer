@@ -114,8 +114,12 @@ Current sprint (this turn)
 [x] QA-agent: add UAT execution report and release candidate decision log templates
 [x] Backend-agent: add Sprint E read-only post-release smoke SQL script
 [x] Git-agent: commit + push Sprint E milestone to origin/main
-[x] Conductor: verify latest Flutter CI run is green (run id 24222821162)
-[x] Conductor: update UAT/RC/Sign-off docs with current NO-GO decision
+[x] Backend-agent: add full seed pack (2026-03-20) for core tables
+[x] QA/DevOps-agent: add Windows .bat quick-run script for manual launch/test
+[x] Conductor: auto-trigger Release Readiness workflow on push to main
+[x] Conductor: verify Flutter CI green (run id 24225438551)
+[x] Conductor: verify Release Readiness green (run id 24225438547) and artifact upload
+[x] Conductor: update UAT/RC/Sign-off docs to final GO decision
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
@@ -126,8 +130,6 @@ Last commit hash:
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
-- Sprint D migration must be applied in Supabase project before production run.
-- Release Readiness workflow must complete green on main for final candidate approval (run manually from GitHub Actions UI).
 
 
 

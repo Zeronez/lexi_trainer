@@ -4,7 +4,7 @@ Use this file to record each release candidate and final promotion decision.
 
 | RC | Workflow run id | Artifact link | Build commit | GO/NO-GO | Decision owner | Decision date | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| rc-2026-04-10 | N/A (manual workflow not run yet) | N/A | 17c085324e35bc8004f9f12a129595945bfa8f80 | NO-GO | Conductor | 2026-04-10 | Automatic Flutter CI is green: https://github.com/Zeronez/lexi_trainer/actions/runs/24222821162. Need manual `Release Readiness` run and artifact before GO. |
+| rc-2026-04-10 | 24225438547 | https://api.github.com/repos/Zeronez/lexi_trainer/actions/artifacts/6363943155/zip | 64493938014dcf1c24ce957f04cf30d60b12c6fa | GO | Conductor | 2026-04-10 | `Flutter CI` run 24225438551 = success, `Release Readiness` run 24225438547 = success, artifact `lexi-trainer-web-release` uploaded. |
 
 ## Guidance
 

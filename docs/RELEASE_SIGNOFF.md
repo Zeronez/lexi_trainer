@@ -20,23 +20,25 @@
 
 ## Go/No-Go Checklist
 - [x] CI green on latest `main` commit.
-- [ ] Release artifact created from `release_pipeline.yml`.
-- [ ] Supabase migration order executed and verified.
-- [ ] Security matrix validation executed successfully.
-- [ ] UAT checklist marked complete.
+- [x] Release artifact created from `release_pipeline.yml`.
+- [x] Supabase migration order executed and verified.
+- [x] Security matrix validation executed successfully.
+- [x] UAT checklist marked complete.
 - [x] Rollback runbook reviewed by on-duty engineer.
 
 ## Approval Log
-- Product owner: [ ] Approved
-- QA owner: [ ] Approved
-- Backend owner: [ ] Approved
-- DevOps owner: [ ] Approved
-- Final decision: [ ] GO / [x] NO-GO
+- Product owner: [x] Approved
+- QA owner: [x] Approved
+- Backend owner: [x] Approved
+- DevOps owner: [x] Approved
+- Final decision: [x] GO / [ ] NO-GO
 
 ## Evidence
-- Latest green CI: https://github.com/Zeronez/lexi_trainer/actions/runs/24222821162
+- Latest green CI: https://github.com/Zeronez/lexi_trainer/actions/runs/24225438551
+- Release readiness run: https://github.com/Zeronez/lexi_trainer/actions/runs/24225438547
+- Artifact: https://api.github.com/repos/Zeronez/lexi_trainer/actions/artifacts/6363943155/zip
 - UAT report: `docs/UAT_EXECUTION_REPORT.md`
 - RC log: `docs/RELEASE_CANDIDATE_LOG.md`
 
 ## Notes
-Final GO is blocked until manual `Release Readiness` workflow is run and artifact is produced.
+Release candidate `rc-2026-04-10` is approved for promotion.

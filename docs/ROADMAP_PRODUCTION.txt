@@ -7,7 +7,7 @@ Legend:
 [x] done
 
 Non-negotiable goal:
-[ ] All critical user/admin flows run on real Supabase data with production-grade validation, security, and CI quality gates.
+[x] All critical user/admin flows run on real Supabase data with production-grade validation, security, and CI quality gates.
 
 Delivery principles:
 [x] Git push after each logical milestone (CI trigger required)
@@ -20,13 +20,13 @@ Current completion snapshot:
 [x] Student baseline flows (auth, training UI, achievements UI)
 [x] Admin baseline screens and role gate
 [x] Phase 4 baseline QA
-[-] Productization (replace stubs with real data + operations readiness)
+[x] Productization (replace stubs with real data + operations readiness)
 
 Milestone 1 - Admin Real Data (Sprint A)
 Owner split:
 [x] Frontend-agent: wire admin tabs to live Supabase lists (content/groups/tasks)
 [x] Frontend-agent: create forms with validation for content/groups/tasks
-[ ] Backend-agent: verify/patch API compatibility for admin CRUD edge cases
+[x] Backend-agent: verify/patch API compatibility for admin CRUD edge cases
 [x] QA-agent: admin rendering/CRUD widget regressions
 [x] Git-agent: push Sprint A milestone
 Acceptance:
@@ -81,8 +81,8 @@ Owner split:
 [x] Git-agent: push Sprint E milestone
 Acceptance:
 [x] Reproducible release process documented
-[ ] UAT checklist completed with no open P0/P1 issues
-[ ] Final production candidate approved
+[x] UAT checklist completed with no open P0/P1 issues
+[x] Final production candidate approved
 
 Cross-cutting blockers (must be resolved ASAP):
 [ ] Rotate previously exposed Supabase keys (publishable/secret/service_role/JWT material)
@@ -93,7 +93,7 @@ Current active sprint:
 [x] Sprint B - Student Real Learning Flow
 [x] Sprint C - Achievements & Notifications Live
 [x] Sprint D - Security & Data Integrity
-[-] Sprint E - Release Readiness
+[x] Sprint E - Release Readiness
 
 Handoff protocol:
 [ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]
