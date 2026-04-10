@@ -106,18 +106,19 @@ Current sprint (this turn)
 [x] QA-agent: add permission matrix tests for UserRole and role-based Home navigation
 [x] DevOps-agent: add security_regression CI job in GitHub Actions
 [x] Conductor: align validation SQL with Supabase SQL Editor compatibility
-[ ] Git-agent: commit + push Sprint D milestone to origin/main
+[x] Git-agent: commit + push Sprint D milestone to origin/main
 
 Handoff protocol for next sessions
 [ ] Conductor: paste updated roadmap section with all [x]/[-]/[ ] statuses
 [x] Conductor: include last commit hash and pending blockers
 
 Last commit hash:
-- c81af6d
+- d28fa68
 
 Current blockers:
 - Supabase keys were exposed outside secret storage and must be rotated immediately.
 - Sprint D migration must be applied in Supabase project before production run.
+
 
 
 

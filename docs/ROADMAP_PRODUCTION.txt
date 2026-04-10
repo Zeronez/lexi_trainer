@@ -66,7 +66,7 @@ Owner split:
 [x] Backend-agent: constraints/index hardening and migration cleanup
 [x] QA-agent: permission matrix test suite (admin/teacher/student)
 [x] DevOps-agent: CI stage for extended security/regression suite
-[ ] Git-agent: push Sprint D milestone
+[x] Git-agent: push Sprint D milestone
 Acceptance:
 [x] Unauthorized access attempts denied across all critical tables
 [x] Permission matrix documented and covered by tests
@@ -92,7 +92,8 @@ Current active sprint:
 [x] Sprint A - Admin Real Data
 [x] Sprint B - Student Real Learning Flow
 [x] Sprint C - Achievements & Notifications Live
-[-] Sprint D - Security & Data Integrity
+[x] Sprint D - Security & Data Integrity
+[-] Sprint E - Release Readiness
 
 Handoff protocol:
 [ ] Keep this roadmap updated every milestone with [x]/[-]/[ ]
